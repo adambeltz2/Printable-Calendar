@@ -227,7 +227,11 @@
   }
   .evt.holiday{ background:var(--holiday-soft); border-left-color:var(--holiday); color:var(--holiday); font-style:italic; }
   .evt.more{ background:none;border:none;color:var(--ink-soft);font-weight:600;padding-left:2px; }
-  .evt-icon{ margin-right:2px; }
+  .evt-icon{
+    display:inline-block;font-weight:700;font-family:'Fraunces',serif;
+    border:1px solid currentColor;border-radius:3px;
+    padding:0 2px;margin-right:3px;font-size:.92em;line-height:1.3;
+  }
 
   /* ---------- Week view ---------- */
   .week-grid{
@@ -403,27 +407,30 @@
     display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--paper-line);
     border-radius:6px;padding:7px 10px;margin-bottom:6px;
   }
-  .member-row .m-icon{ font-size:1.1rem;width:24px;text-align:center; }
+  .member-row .m-icon{ width:auto;text-align:center; }
   .member-row .m-name{ flex:1;font-size:.85rem; }
-  .icon-picker{ display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:6px; }
-  .icon-picker button{
-    font-size:1.05rem;padding:8px 0;border:1px solid var(--paper-line-strong);border-radius:6px;
-    background:#fff;cursor:pointer;
+  .initials-badge{
+    display:inline-flex;align-items:center;justify-content:center;
+    min-width:22px;height:22px;padding:0 4px;
+    border:1.5px solid var(--ink);border-radius:5px;
+    font-family:'Fraunces',serif;font-weight:700;font-size:.7rem;letter-spacing:.3px;
+    color:var(--ink);background:#fff;
   }
-  .icon-picker button.selected{ background:var(--accent);color:#fff;border-color:var(--accent); }
 
   /* ---------- Print ---------- */
-  /* Explicit inch dimensions print more reliably across mobile print
-     services than the "landscape" keyword alone — some Android/Chrome
-     print pipelines otherwise still default to a portrait page and
-     squeeze/paginate this content across two pages. */
+  /* Explicit inch dimensions on @page print more reliably across mobile
+     print services than the "landscape" keyword alone. Note: the page
+     elements below use 100% (not 11in x 8.5in) because @page already
+     reserves the 0.25in margin — sizing elements to the full sheet
+     dimensions overflows the printable area and spills a near-empty
+     second page. */
   @page{ size: 11in 8.5in; margin: 0.25in; }
   @media print{
-    html, body{ background:#fff; width:11in; height:8.5in; }
+    html, body{ background:#fff; width:100%; height:100%; margin:0; }
     .no-print{ display:none !important; }
-    .sheet-wrap{ padding:0;width:11in;height:8.5in; }
+    .sheet-wrap{ padding:0;width:100%;height:100%; }
     .calendar-page{
-      box-shadow:none;border:none;width:11in;height:8.5in;max-width:none;
+      box-shadow:none;border:none;width:100%;height:100%;max-width:none;
       aspect-ratio:auto;padding:0;
     }
     .evt{ background:none;border-left:2px solid var(--marker); }
@@ -592,16 +599,13 @@
 <div class="modal-backdrop no-print" id="familyModalBackdrop" style="display:none;">
   <div class="modal">
     <h2>Family members</h2>
-    <p class="grid-help" style="margin-top:0;">Give each family member a simple symbol instead of a color — it'll show up next to their events so you can tell at a glance who's got what, even printed in black and white.</p>
+    <p class="grid-help" style="margin-top:0;">Give each family member's events a small initials badge instead of a color — an easy way to tell at a glance who's got what, even printed in black and white.</p>
     <div id="memberList"></div>
     <hr class="sep">
     <div class="field">
       <label for="memberName">Name</label>
-      <input type="text" id="memberName" placeholder="e.g. Jake">
-    </div>
-    <div class="field">
-      <label>Symbol</label>
-      <div class="icon-picker" id="iconPicker"></div>
+      <input type="text" id="memberName" placeholder="First name, or First Last">
+      <div id="memberInitialsPreview" style="margin-top:6px;font-size:.78rem;color:var(--ink-soft);">Badge: <span class="initials-badge" id="memberInitialsBadge">–</span></div>
     </div>
     <div class="modal-actions">
       <button class="btn-primary" id="addMemberBtn">Add family member</button>
@@ -628,9 +632,9 @@
     </div>
 
     <div class="tab-panel" id="tab-grid">
-      <p class="grid-help">Type dates and text directly into the rows below, like a spreadsheet — or copy cells from Excel/Google Sheets and paste into the first Date box to fill in several rows at once. Dates can be <code>6/12/2026</code> or <code>6/12</code> (no year = repeats yearly, like a birthday), or type a weekday name like <code>Tuesday</code> for something that happens every week.</p>
+      <p class="grid-help">Type dates and text directly into the rows below, like a spreadsheet — or copy cells from Excel/Google Sheets and paste into the first Date box to fill in several rows at once. Dates can be <code>6/12/2026</code> or <code>6/12</code> (no year = repeats yearly, like a birthday), or type a weekday name like <code>Tuesday</code> for something that happens every week. "Who" is optional — type a name and it'll be matched or added to Family automatically.</p>
       <table class="grid-entry-table" id="gridEntryTable">
-        <thead><tr><th style="width:30%">Date (or weekday)</th><th>Text</th><th style="width:64px">Yearly</th><th></th></tr></thead>
+        <thead><tr><th style="width:26%">Date (or weekday)</th><th>Text</th><th style="width:15%">Who</th><th style="width:56px">Yearly</th><th></th></tr></thead>
         <tbody id="gridEntryBody"></tbody>
       </table>
       <div style="display:flex;gap:8px;margin-top:10px;">
@@ -641,24 +645,27 @@
 
     <div class="tab-panel" id="tab-importexport">
       <div class="field">
+        <label>Export your events</label>
+        <p class="grid-help" style="margin-top:0;">Save everything on this calendar to a CSV file — handy as a backup, or to move your events to another computer or browser (just import it there).</p>
+        <div class="import-export-row">
+          <button class="btn-plain" id="exportCsvBtn">Export my events as CSV</button>
+        </div>
+      </div>
+      <hr class="sep">
+      <div class="field">
         <label>Import a spreadsheet (CSV)</label>
-        <p class="grid-help" style="margin-top:0;">Save your spreadsheet as a CSV file with three columns — date, text, and whether it repeats yearly. You can also use a weekday name (like <code>Tuesday</code>) instead of a date for weekly things. Example:</p>
-        <div class="csv-example">date,text,yearly
-6/12/1984,Mom's birthday,yes
-2026-12-25,Christmas with the Smiths,no
-Tuesday,Soccer practice,no
-3/17,St. Patrick's Day reminder,yes</div>
+        <p class="grid-help" style="margin-top:0;">Four columns — date, text, whether it repeats yearly, and optionally who it's for. Use a weekday name (like <code>Tuesday</code>) instead of a date for things that happen every week. If the name in "who" doesn't match an existing family member, one will be added automatically. Example:</p>
+        <div class="csv-example">date,text,yearly,who
+6/12/1984,Mom's birthday,yes,
+2026-12-25,Christmas with the Smiths,no,
+Tuesday,Soccer practice,no,Jake
+3/17,St. Patrick's Day reminder,yes,</div>
         <div class="import-export-row">
           <button class="btn-plain" id="downloadCsvTemplateBtn">Download example CSV</button>
           <button class="btn-plain" id="importBtn">Choose CSV file to import…</button>
-          <input type="file" id="importInput" accept=".csv,.txt,.json" style="display:none;">
+          <input type="file" id="importInput" accept=".csv,.txt" style="display:none;">
         </div>
       </div>
-      <details class="advanced-block">
-        <summary>Advanced: full backup file</summary>
-        <p class="grid-help">Saves every event to a single file you can keep as a backup, or use to move your events to another computer. Choose "Import" above and pick this file to restore it.</p>
-        <button class="btn-plain" id="exportJsonBtn">Download full backup</button>
-      </details>
     </div>
 
     <div class="modal-actions">
@@ -673,7 +680,6 @@ Tuesday,Soccer practice,no
   const DOW_SUN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const WEEKDAY_NAMES = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
   const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const ICON_SET = ['★','●','▲','■','♦','♥','☀','♪','✈','⚑','✎','⚙'];
   const STORE_KEY = 'pc_events_v1';
   const SETTINGS_KEY = 'pc_settings_v1';
   const MEMBERS_KEY = 'pc_members_v1';
@@ -689,9 +695,16 @@ Tuesday,Soccer practice,no
     weekStart: startOfWeek(today),
     yearOnly: today.getFullYear(),
     editingId: null,
-    mealDate: null,
-    selectedIcon: ICON_SET[0]
+    mealDate: null
   };
+
+  // First name -> single initial. "First Last" (or more words) -> first + last initial.
+  function computeInitials(name){
+    const parts = (name||'').trim().split(/\s+/).filter(Boolean);
+    if(parts.length===0) return '';
+    if(parts.length===1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+  }
 
   // ---------- settings ----------
   function loadSettings(){
@@ -1139,16 +1152,10 @@ Tuesday,Soccer practice,no
 
   // ---------- family modal ----------
   const familyModalBackdrop = document.getElementById('familyModalBackdrop');
-  const iconPicker = document.getElementById('iconPicker');
-  ICON_SET.forEach(icon=>{
-    const b = document.createElement('button');
-    b.type='button'; b.textContent=icon;
-    b.addEventListener('click', ()=>{
-      state.selectedIcon = icon;
-      iconPicker.querySelectorAll('button').forEach(x=>x.classList.remove('selected'));
-      b.classList.add('selected');
-    });
-    iconPicker.appendChild(b);
+  const memberNameInput = document.getElementById('memberName');
+  const memberInitialsBadge = document.getElementById('memberInitialsBadge');
+  memberNameInput.addEventListener('input', ()=>{
+    memberInitialsBadge.textContent = computeInitials(memberNameInput.value) || '–';
   });
   function renderMemberList(){
     const wrap = document.getElementById('memberList');
@@ -1159,7 +1166,7 @@ Tuesday,Soccer practice,no
     }
     wrap.innerHTML = members.map(m=>`
       <div class="member-row">
-        <div class="m-icon">${m.icon}</div>
+        <div class="m-icon"><span class="initials-badge">${escapeHtml(m.icon)}</span></div>
         <div class="m-name">${escapeHtml(m.name)}</div>
         <button data-del-member="${m.id}" title="Remove" style="border:none;background:none;color:var(--danger);cursor:pointer;font-size:1rem;">✕</button>
       </div>`).join('');
@@ -1173,19 +1180,19 @@ Tuesday,Soccer practice,no
   document.getElementById('familyBtn').addEventListener('click', ()=>{
     familyModalBackdrop.style.display='flex';
     renderMemberList();
-    document.getElementById('memberName').value='';
-    state.selectedIcon = ICON_SET[0];
-    iconPicker.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('selected', i===0));
+    memberNameInput.value='';
+    memberInitialsBadge.textContent='–';
   });
   document.getElementById('familyCloseBtn').addEventListener('click', ()=> familyModalBackdrop.style.display='none');
   familyModalBackdrop.addEventListener('click', e=>{ if(e.target===familyModalBackdrop) familyModalBackdrop.style.display='none'; });
   document.getElementById('addMemberBtn').addEventListener('click', ()=>{
-    const name = document.getElementById('memberName').value.trim();
+    const name = memberNameInput.value.trim();
     if(!name){ alert('Enter a name first.'); return; }
     const members = loadMembers();
-    members.push({ id: uid(), name, icon: state.selectedIcon });
+    members.push({ id: uid(), name, icon: computeInitials(name) });
     saveMembers(members);
-    document.getElementById('memberName').value='';
+    memberNameInput.value='';
+    memberInitialsBadge.textContent='–';
     renderMemberList();
   });
 
@@ -1228,7 +1235,7 @@ Tuesday,Soccer practice,no
     }
     wrap.innerHTML = userList.map(e=>{
       const mem = e.who ? memberById(e.who) : null;
-      const icon = mem ? `${mem.icon} ` : '';
+      const icon = mem ? `<span class="evt-icon">${escapeHtml(mem.icon)}</span> ` : '';
       return `<div class="evt-row">
         <div>
           <div>${icon}${escapeHtml(e.text)}</div>
@@ -1269,10 +1276,22 @@ Tuesday,Soccer practice,no
     if(m4) return { y:null, m:Number(m4[1])-1, d:Number(m4[2]) };
     return null;
   }
-  function eventFromParsed(parsed, text, yearlyFlag){
-    if(parsed.weekly) return { id:uid(), y:null, m:null, d:null, weekday:parsed.weekday, repeat:'weekly', text, who:null };
-    if(yearlyFlag || parsed.y===null) return { id:uid(), y:null, m:parsed.m, d:parsed.d, repeat:'yearly', text, who:null };
-    return { id:uid(), y:parsed.y, m:parsed.m, d:parsed.d, repeat:'none', text, who:null };
+  function eventFromParsed(parsed, text, yearlyFlag, whoId){
+    if(parsed.weekly) return { id:uid(), y:null, m:null, d:null, weekday:parsed.weekday, repeat:'weekly', text, who:whoId||null };
+    if(yearlyFlag || parsed.y===null) return { id:uid(), y:null, m:parsed.m, d:parsed.d, repeat:'yearly', text, who:whoId||null };
+    return { id:uid(), y:parsed.y, m:parsed.m, d:parsed.d, repeat:'none', text, who:whoId||null };
+  }
+  // Finds a family member by name (case-insensitive); creates one if no match.
+  function resolveMemberByName(name){
+    name = (name||'').trim();
+    if(!name) return null;
+    const members = loadMembers();
+    const existing = members.find(m => m.name.toLowerCase() === name.toLowerCase());
+    if(existing) return existing.id;
+    const created = { id: uid(), name, icon: computeInitials(name) };
+    members.push(created);
+    saveMembers(members);
+    return created.id;
   }
 
   // ---------- grid entry ----------
@@ -1282,14 +1301,17 @@ Tuesday,Soccer practice,no
     tr.innerHTML = `
       <td><input type="text" class="g-date" placeholder="6/12/2026, 6/12, or Tuesday"></td>
       <td><input type="text" class="g-text" placeholder="e.g. Mom's birthday"></td>
+      <td><input type="text" class="g-who" placeholder="optional"></td>
       <td style="text-align:center;"><input type="checkbox" class="g-yearly"></td>
       <td><button class="rm-row" title="Remove row">✕</button></td>`;
     gridBody.appendChild(tr);
     const dateInput = tr.querySelector('.g-date');
     const textInput = tr.querySelector('.g-text');
+    const whoInput = tr.querySelector('.g-who');
     const yearlyInput = tr.querySelector('.g-yearly');
     if(prefill){
-      dateInput.value = prefill.date||''; textInput.value = prefill.text||''; yearlyInput.checked = !!prefill.yearly;
+      dateInput.value = prefill.date||''; textInput.value = prefill.text||'';
+      whoInput.value = prefill.who||''; yearlyInput.checked = !!prefill.yearly;
     }
     tr.querySelector('.rm-row').addEventListener('click', ()=> tr.remove());
 
@@ -1300,8 +1322,8 @@ Tuesday,Soccer practice,no
       const rows = pasted.split(/\r?\n/).filter(r=>r.trim().length);
       rows.forEach((row,i)=>{
         const cols = row.split('\t');
-        const rowData = { date: (cols[0]||'').trim(), text:(cols[1]||'').trim(), yearly: /^y/i.test((cols[2]||'').trim()) };
-        if(i===0){ dateInput.value=rowData.date; textInput.value=rowData.text; yearlyInput.checked=rowData.yearly; }
+        const rowData = { date: (cols[0]||'').trim(), text:(cols[1]||'').trim(), who:(cols[2]||'').trim(), yearly: /^y/i.test((cols[3]||'').trim()) };
+        if(i===0){ dateInput.value=rowData.date; textInput.value=rowData.text; whoInput.value=rowData.who; yearlyInput.checked=rowData.yearly; }
         else addGridRow(rowData);
       });
     });
@@ -1318,11 +1340,12 @@ Tuesday,Soccer practice,no
     rows.forEach(tr=>{
       const dateStr = tr.querySelector('.g-date').value;
       const text = tr.querySelector('.g-text').value.trim();
+      const who = tr.querySelector('.g-who').value.trim();
       const yearly = tr.querySelector('.g-yearly').checked;
       if(!dateStr && !text) return;
       const parsed = parseFlexibleDate(dateStr);
       if(!parsed || !text){ skipped++; return; }
-      newEvents.push(eventFromParsed(parsed, text, yearly));
+      newEvents.push(eventFromParsed(parsed, text, yearly, resolveMemberByName(who)));
       added++;
     });
     if(added===0){ alert('No complete rows to save. Each row needs a date (or weekday) and some text.'); return; }
@@ -1333,16 +1356,60 @@ Tuesday,Soccer practice,no
     alert(`Added ${added} event(s).${skipped?` (${skipped} row(s) skipped — check the date format.)`:''}`);
   });
 
+  // ---------- CSV helpers ----------
+  function parseCsvLine(line){
+    const fields = [];
+    let cur = '', inQuotes = false;
+    for(let i=0;i<line.length;i++){
+      const c = line[i];
+      if(inQuotes){
+        if(c === '"'){
+          if(line[i+1] === '"'){ cur += '"'; i++; }
+          else inQuotes = false;
+        } else cur += c;
+      } else {
+        if(c === '"') inQuotes = true;
+        else if(c === ','){ fields.push(cur.trim()); cur=''; }
+        else cur += c;
+      }
+    }
+    fields.push(cur.trim());
+    return fields;
+  }
+  function csvField(str){
+    str = String(str==null ? '' : str);
+    return /[",\n]/.test(str) ? '"' + str.replace(/"/g,'""') + '"' : str;
+  }
+  function dateFieldForExport(ev){
+    const rt = repeatType(ev);
+    if(rt==='weekly'){ const w=WEEKDAY_NAMES[ev.weekday]; return w[0].toUpperCase()+w.slice(1); }
+    if(rt==='yearly') return `${ev.m+1}/${ev.d}`;
+    return `${ev.m+1}/${ev.d}/${ev.y}`;
+  }
+
   // ---------- import / export ----------
-  document.getElementById('exportJsonBtn').addEventListener('click', ()=>{
-    downloadFile('calendar-backup.json', JSON.stringify({events: loadEvents(), members: loadMembers(), meals: loadMeals()}, null, 2), 'application/json');
+  document.getElementById('exportCsvBtn').addEventListener('click', ()=>{
+    const events = loadEvents();
+    if(events.length===0){ alert('No events to export yet.'); return; }
+    const rows = ['date,text,yearly,who'];
+    events.forEach(ev=>{
+      const rt = repeatType(ev);
+      const mem = ev.who ? memberById(ev.who) : null;
+      rows.push([
+        csvField(dateFieldForExport(ev)),
+        csvField(ev.text),
+        rt==='yearly' ? 'yes' : 'no',
+        csvField(mem ? mem.name : '')
+      ].join(','));
+    });
+    downloadFile('calendar-events.csv', rows.join('\n'), 'text/csv');
   });
   document.getElementById('downloadCsvTemplateBtn').addEventListener('click', ()=>{
-    const example = `date,text,yearly
-6/12/1984,Mom's birthday,yes
-2026-12-25,Christmas with the Smiths,no
-Tuesday,Soccer practice,no
-3/17,St. Patrick's Day reminder,yes`;
+    const example = `date,text,yearly,who
+6/12/1984,Mom's birthday,yes,
+2026-12-25,Christmas with the Smiths,no,
+Tuesday,Soccer practice,no,Jake
+3/17,St. Patrick's Day reminder,yes,`;
     downloadFile('calendar-events-example.csv', example, 'text/csv');
   });
   function downloadFile(filename, content, mime){
@@ -1361,39 +1428,18 @@ Tuesday,Soccer practice,no
     const reader = new FileReader();
     reader.onload = () => {
       try{
-        let imported = [];
-        if(file.name.toLowerCase().endsWith('.json')){
-          const parsed = JSON.parse(reader.result);
-          const evSource = Array.isArray(parsed) ? parsed : (parsed.events || []);
-          imported = evSource.map(ev => ({
-            id: uid(),
-            y: (ev.y===undefined || ev.y===null) ? null : Number(ev.y),
-            m: ev.m==null ? null : Number(ev.m),
-            d: ev.d==null ? null : Number(ev.d),
-            weekday: ev.weekday==null ? null : Number(ev.weekday),
-            repeat: ev.repeat || (ev.y===null ? 'yearly' : 'none'),
-            text: String(ev.text||'').trim(),
-            who: ev.who || null
-          })).filter(ev => ev.text);
-          if(!Array.isArray(parsed)){
-            if(parsed.members) saveMembers(parsed.members);
-            if(parsed.meals) saveMeals(parsed.meals);
-          }
-        } else {
-          let lines = reader.result.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
-          if(lines.length && /^date\s*,\s*text/i.test(lines[0])) lines = lines.slice(1);
-          imported = lines.map(line=>{
-            const m0 = line.match(/^([^,]+),\s*"?([^",]*(?:""[^",]*)*)"?,\s*(yes|no)?\s*$/i)
-                    || line.match(/^([^,]+),(.+)$/);
-            if(!m0) return null;
-            const datePart = m0[1].trim();
-            let text = (m0[2]||'').trim().replace(/^"|"$/g,'').replace(/""/g,'"');
-            const recurFlag = (m0[3]||'').toLowerCase();
-            const parsed = parseFlexibleDate(datePart);
-            if(!parsed || !text) return null;
-            return eventFromParsed(parsed, text, recurFlag==='yes');
-          }).filter(Boolean);
-        }
+        let lines = reader.result.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+        if(lines.length && /^date\s*,\s*text/i.test(lines[0])) lines = lines.slice(1);
+        const imported = lines.map(line=>{
+          const fields = parseCsvLine(line);
+          const datePart = fields[0] || '';
+          const text = fields[1] || '';
+          const recurFlag = (fields[2]||'').toLowerCase();
+          const whoName = fields[3] || '';
+          const parsed = parseFlexibleDate(datePart);
+          if(!parsed || !text) return null;
+          return eventFromParsed(parsed, text, recurFlag==='yes', resolveMemberByName(whoName));
+        }).filter(Boolean);
         if(imported.length===0){ alert('No valid events found in that file. Double check the date format against the example.'); return; }
         const merged = loadEvents().concat(imported);
         saveEvents(merged);
