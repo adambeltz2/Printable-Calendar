@@ -37,11 +37,11 @@
   .toolbar{
     background:var(--accent);
     color:#fff;
-    padding:12px 20px;
+    padding:10px 20px;
     display:flex;
     flex-wrap:wrap;
     align-items:center;
-    gap:12px;
+    gap:10px;
     position:sticky;
     top:0;
     z-index:20;
@@ -49,7 +49,7 @@
   }
   .brand{
     font-family:'Fraunces',serif;
-    font-size:1.25rem;
+    font-size:1.2rem;
     font-weight:600;
     letter-spacing:.2px;
     margin-right:4px;
@@ -61,7 +61,7 @@
     width:20px;height:20px;border-radius:4px;
     background:var(--marker);
     display:inline-flex;align-items:center;justify-content:center;
-    font-family:'Fraunces',serif;font-weight:700;font-size:.66rem;color:#fff;
+    font-family:'Fraunces',serif;font-weight:700;font-size:.64rem;color:#fff;
     transform:rotate(-6deg);
   }
   .seg{
@@ -73,7 +73,7 @@
   }
   .seg button{
     border:none;background:transparent;color:#fff;
-    padding:6px 13px;border-radius:6px;font-size:.83rem;font-weight:600;
+    padding:6px 12px;border-radius:6px;font-size:.82rem;font-weight:600;
     cursor:pointer;font-family:inherit;opacity:.78;
     transition:background .15s,opacity .15s;
   }
@@ -81,7 +81,7 @@
   .seg button:not(.active):hover{ opacity:1;background:rgba(255,255,255,.12); }
 
   .toolbar select, .toolbar .navbtn, .toolbar input[type=date]{
-    font-family:inherit;font-size:.83rem;font-weight:600;
+    font-family:inherit;font-size:.82rem;font-weight:600;
     border:1px solid rgba(255,255,255,.35);
     background:rgba(255,255,255,.08);
     color:#fff;
@@ -94,7 +94,7 @@
   .toolbar .spacer{ flex:1; }
   .toolbar .actions{ display:flex; gap:8px; flex-wrap:wrap; }
   .btn{
-    font-family:inherit;font-size:.83rem;font-weight:600;
+    font-family:inherit;font-size:.82rem;font-weight:600;
     border:1px solid rgba(255,255,255,.4);
     background:rgba(255,255,255,.1);
     color:#fff;border-radius:6px;padding:7px 12px;cursor:pointer;
@@ -106,7 +106,7 @@
   .btn.solid:hover{ background:#f0eee6; }
   .toggle-pill{
     display:flex;align-items:center;gap:6px;
-    font-size:.8rem;font-weight:600;
+    font-size:.78rem;font-weight:600;
     background:rgba(255,255,255,.08);
     border:1px solid rgba(255,255,255,.35);
     border-radius:20px;padding:5px 10px 5px 6px;cursor:pointer;
@@ -116,7 +116,7 @@
 
   /* ---------- Page wrap ---------- */
   .sheet-wrap{
-    padding:24px 20px 60px;
+    padding:22px 20px 60px;
     display:flex;
     justify-content:center;
   }
@@ -129,7 +129,7 @@
     border:1px solid var(--paper-line-strong);
     display:flex;
     flex-direction:column;
-    padding:18px 24px 14px;
+    padding:16px 20px 12px;
     position:relative;
   }
   .page-header{
@@ -222,6 +222,7 @@
   }
   .evt.holiday{ background:var(--holiday-soft); border-left-color:var(--holiday); color:var(--holiday); font-style:italic; }
   .evt.more{ background:none;border:none;color:var(--ink-soft);font-weight:600;padding-left:2px; }
+  .evt-icon{ margin-right:2px; }
 
   /* ---------- Week view ---------- */
   .week-grid{
@@ -242,18 +243,27 @@
   .week-col:hover{ background:#F3F1E9; }
   .week-col.today{ background:var(--accent-soft); }
   .week-col-head{
-    padding:6px 8px 4px;
+    padding:5px 8px 4px;
     border-bottom:1px solid var(--paper-line-strong);
     text-align:center;
   }
   .week-col-head .dname{
-    font-size:.64rem;font-weight:700;letter-spacing:1.2px;color:var(--ink-soft);text-transform:uppercase;
+    font-size:.62rem;font-weight:700;letter-spacing:1.2px;color:var(--ink-soft);text-transform:uppercase;
   }
-  .week-col-head .dnum{ font-family:'Fraunces',serif;font-weight:600;font-size:1.15rem; }
+  .week-col-head .dnum{ font-family:'Fraunces',serif;font-weight:600;font-size:1.1rem; }
   .week-col-events{ padding:5px 7px;display:flex;flex-direction:column;gap:3px; }
+  .meal-row{
+    margin:2px 7px 4px;
+    font-size:.66rem;
+    color:var(--ink-soft);
+    border-top:1px dashed var(--paper-line-strong);
+    padding-top:3px;
+    cursor:pointer;
+  }
+  .meal-row .meal-placeholder{ color:#B9B4A4;font-style:italic; }
   .week-col-lines{
     flex:1;
-    background-image:repeating-linear-gradient(to bottom, transparent, transparent 20px, var(--paper-line) 20px, var(--paper-line) 21px);
+    background-image:repeating-linear-gradient(to bottom, transparent, transparent 19px, var(--paper-line) 19px, var(--paper-line) 20px);
     background-position:0 4px;
   }
 
@@ -292,9 +302,20 @@
   .mini-cell.today .mini-dot{ background:#fff; }
 
   .page-footer{
-    margin-top:6px;font-size:.62rem;color:var(--ink-soft);
+    margin-top:5px;font-size:.6rem;color:var(--ink-soft);
     display:flex;justify-content:space-between;
   }
+
+  /* ---------- Ink-saver mode ---------- */
+  body.ink-saver .day-cell.today,
+  body.ink-saver .week-col.today{ background:none; box-shadow:inset 0 0 0 1.5px var(--ink); }
+  body.ink-saver .day-cell.today .day-num{ background:none;border:1.5px solid var(--ink);color:var(--ink); }
+  body.ink-saver .day-cell.out{ background:none; }
+  body.ink-saver .evt{ background:none; border-left:1.5px solid var(--ink); color:var(--ink); }
+  body.ink-saver .evt.holiday{ background:none; border-left:1.5px dashed var(--ink); color:var(--ink); }
+  body.ink-saver .mini-cell.today{ background:none; box-shadow:inset 0 0 0 1px var(--ink); color:var(--ink); }
+  body.ink-saver .mini-dot{ background:var(--ink); }
+  body.ink-saver .calendar-page{ box-shadow:none; border:1px solid var(--ink); }
 
   /* ---------- Modal ---------- */
   .modal-backdrop{
@@ -313,12 +334,12 @@
   }
   .field{ margin-bottom:12px; }
   .field label{ display:block;font-size:.78rem;font-weight:600;color:var(--ink-soft);margin-bottom:4px; }
-  .field input[type=text], .field input[type=date]{
+  .field input[type=text], .field input[type=date], .field select{
     width:100%;padding:8px 10px;border:1px solid var(--paper-line-strong);
     border-radius:6px;font-family:inherit;font-size:.9rem;background:#fff;
   }
-  .checkrow{ display:flex;align-items:center;gap:8px;margin-top:6px; }
-  .checkrow label{ font-size:.85rem;color:var(--ink); }
+  .radio-group{ display:flex;flex-direction:column;gap:6px;margin-top:4px; }
+  .radio-group label{ display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--ink);font-weight:400; }
   .modal-actions{ display:flex;gap:8px;justify-content:flex-end;margin-top:16px; }
   .btn-plain{
     font-family:inherit;font-size:.85rem;font-weight:600;padding:8px 14px;
@@ -342,9 +363,9 @@
   }
 
   /* tabs inside manage modal */
-  .modal-tabs{ display:flex;gap:4px;border-bottom:1px solid var(--paper-line-strong);margin-bottom:14px; }
+  .modal-tabs{ display:flex;gap:4px;border-bottom:1px solid var(--paper-line-strong);margin-bottom:14px;flex-wrap:wrap; }
   .modal-tabs button{
-    font-family:inherit;font-size:.82rem;font-weight:600;color:var(--ink-soft);
+    font-family:inherit;font-size:.8rem;font-weight:600;color:var(--ink-soft);
     background:none;border:none;padding:8px 10px;cursor:pointer;border-bottom:2px solid transparent;
   }
   .modal-tabs button.active{ color:var(--accent-dark);border-bottom-color:var(--accent); }
@@ -372,8 +393,22 @@
   .advanced-block{ margin-top:16px;padding-top:12px;border-top:1px dashed var(--paper-line-strong); }
   .advanced-block summary{ font-size:.78rem;font-weight:600;color:var(--ink-soft);cursor:pointer; }
 
+  /* family members */
+  .member-row{
+    display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--paper-line);
+    border-radius:6px;padding:7px 10px;margin-bottom:6px;
+  }
+  .member-row .m-icon{ font-size:1.1rem;width:24px;text-align:center; }
+  .member-row .m-name{ flex:1;font-size:.85rem; }
+  .icon-picker{ display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:6px; }
+  .icon-picker button{
+    font-size:1.05rem;padding:8px 0;border:1px solid var(--paper-line-strong);border-radius:6px;
+    background:#fff;cursor:pointer;
+  }
+  .icon-picker button.selected{ background:var(--accent);color:#fff;border-color:var(--accent); }
+
   /* ---------- Print ---------- */
-  @page{ size:landscape; margin:0.35in; }
+  @page{ size: letter landscape; margin: 0.25in; }
   @media print{
     body{ background:#fff; }
     .no-print{ display:none !important; }
@@ -425,11 +460,14 @@
   <button class="navbtn" id="todayBtn">Today</button>
 
   <label class="toggle-pill"><input type="checkbox" id="mondayStartToggle"> Monday start</label>
-  <label class="toggle-pill"><input type="checkbox" id="holidaysToggle" checked> US holidays</label>
+  <label class="toggle-pill"><input type="checkbox" id="holidaysToggle" checked> Holidays</label>
+  <label class="toggle-pill"><input type="checkbox" id="mealsToggle" checked> Meal plan</label>
+  <label class="toggle-pill"><input type="checkbox" id="inkSaverToggle"> Ink-saver</label>
 
   <div class="spacer"></div>
 
   <div class="actions">
+    <button class="btn" id="familyBtn">👪 Family</button>
     <button class="btn" id="manageBtn">Events…</button>
     <button class="btn solid" id="printBtn">🖨 Print</button>
   </div>
@@ -451,13 +489,60 @@
       <label for="eventText">Text</label>
       <input type="text" id="eventText" placeholder="e.g. Mom's birthday, Rent due">
     </div>
-    <div class="checkrow">
-      <input type="checkbox" id="eventRecurring">
-      <label for="eventRecurring">Repeats every year (birthdays, anniversaries)</label>
+    <div class="field">
+      <label for="eventWho">Who's it for? (optional)</label>
+      <select id="eventWho"><option value="">Everyone / general</option></select>
+    </div>
+    <div class="field">
+      <label>Repeats</label>
+      <div class="radio-group">
+        <label><input type="radio" name="eventRepeat" value="none" checked> Just this once</label>
+        <label><input type="radio" name="eventRepeat" value="yearly"> Every year (birthdays, anniversaries)</label>
+        <label><input type="radio" name="eventRepeat" value="weekly"> Every week, same day (practice, chores)</label>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-plain" id="eventCancelBtn">Cancel</button>
       <button class="btn-primary" id="eventSaveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Meal modal -->
+<div class="modal-backdrop no-print" id="mealModalBackdrop" style="display:none;">
+  <div class="modal">
+    <h2>Dinner plan</h2>
+    <div class="field">
+      <label id="mealModalDateLabel" for="mealText">Text</label>
+      <input type="text" id="mealText" placeholder="e.g. Tacos">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-plain" id="mealCancelBtn">Cancel</button>
+      <button class="btn-primary" id="mealSaveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Family modal -->
+<div class="modal-backdrop no-print" id="familyModalBackdrop" style="display:none;">
+  <div class="modal">
+    <h2>Family members</h2>
+    <p class="grid-help" style="margin-top:0;">Give each family member a simple symbol instead of a color — it'll show up next to their events so you can tell at a glance who's got what, even printed in black and white.</p>
+    <div id="memberList"></div>
+    <hr class="sep">
+    <div class="field">
+      <label for="memberName">Name</label>
+      <input type="text" id="memberName" placeholder="e.g. Jake">
+    </div>
+    <div class="field">
+      <label>Symbol</label>
+      <div class="icon-picker" id="iconPicker"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="addMemberBtn">Add family member</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-plain" id="familyCloseBtn">Close</button>
     </div>
   </div>
 </div>
@@ -478,9 +563,9 @@
     </div>
 
     <div class="tab-panel" id="tab-grid">
-      <p class="grid-help">Type dates and text directly into the rows below, like a spreadsheet — or copy cells from Excel/Google Sheets and paste into the first Date box to fill in several rows at once. Dates can be <code>6/12/2026</code> or <code>6/12</code> (leave off the year for things that repeat yearly, like birthdays).</p>
+      <p class="grid-help">Type dates and text directly into the rows below, like a spreadsheet — or copy cells from Excel/Google Sheets and paste into the first Date box to fill in several rows at once. Dates can be <code>6/12/2026</code> or <code>6/12</code> (no year = repeats yearly, like a birthday), or type a weekday name like <code>Tuesday</code> for something that happens every week.</p>
       <table class="grid-entry-table" id="gridEntryTable">
-        <thead><tr><th style="width:32%">Date</th><th>Text</th><th style="width:70px">Yearly</th><th></th></tr></thead>
+        <thead><tr><th style="width:30%">Date (or weekday)</th><th>Text</th><th style="width:64px">Yearly</th><th></th></tr></thead>
         <tbody id="gridEntryBody"></tbody>
       </table>
       <div style="display:flex;gap:8px;margin-top:10px;">
@@ -492,10 +577,11 @@
     <div class="tab-panel" id="tab-importexport">
       <div class="field">
         <label>Import a spreadsheet (CSV)</label>
-        <p class="grid-help" style="margin-top:0;">Save your spreadsheet as a CSV file with three columns — date, text, and whether it repeats yearly. Example:</p>
+        <p class="grid-help" style="margin-top:0;">Save your spreadsheet as a CSV file with three columns — date, text, and whether it repeats yearly. You can also use a weekday name (like <code>Tuesday</code>) instead of a date for weekly things. Example:</p>
         <div class="csv-example">date,text,yearly
 6/12/1984,Mom's birthday,yes
 2026-12-25,Christmas with the Smiths,no
+Tuesday,Soccer practice,no
 3/17,St. Patrick's Day reminder,yes</div>
         <div class="import-export-row">
           <button class="btn-plain" id="downloadCsvTemplateBtn">Download example CSV</button>
@@ -520,12 +606,16 @@
 (function(){
   "use strict";
   const DOW_SUN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const WEEKDAY_NAMES = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
   const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const ICON_SET = ['★','●','▲','■','♦','♥','☀','♪','✈','⚑','✎','⚙'];
   const STORE_KEY = 'pc_events_v1';
   const SETTINGS_KEY = 'pc_settings_v1';
+  const MEMBERS_KEY = 'pc_members_v1';
+  const MEALS_KEY = 'pc_meals_v1';
 
   const today = new Date();
-  const settings = Object.assign({ mondayStart:false, showHolidays:true }, loadSettings());
+  const settings = Object.assign({ mondayStart:false, showHolidays:true, showMeals:true, inkSaver:false }, loadSettings());
 
   const state = {
     view: 'month',
@@ -533,7 +623,9 @@
     month: today.getMonth(),
     weekStart: startOfWeek(today),
     yearOnly: today.getFullYear(),
-    editingId: null
+    editingId: null,
+    mealDate: null,
+    selectedIcon: ICON_SET[0]
   };
 
   // ---------- settings ----------
@@ -541,14 +633,33 @@
     try{ return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; }catch(e){ return {}; }
   }
   function saveSettings(){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+  document.body.classList.toggle('ink-saver', settings.inkSaver);
 
-  // ---------- storage ----------
+  // ---------- storage: events ----------
   function loadEvents(){
     try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
     catch(e){ return []; }
   }
   function saveEvents(list){ localStorage.setItem(STORE_KEY, JSON.stringify(list)); }
   function uid(){ return 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function repeatType(ev){
+    if(ev.repeat) return ev.repeat;
+    return ev.y===null ? 'yearly' : 'none';
+  }
+
+  // ---------- storage: family members ----------
+  function loadMembers(){
+    try{ return JSON.parse(localStorage.getItem(MEMBERS_KEY)) || []; }catch(e){ return []; }
+  }
+  function saveMembers(list){ localStorage.setItem(MEMBERS_KEY, JSON.stringify(list)); }
+  function memberById(id){ return loadMembers().find(m=>m.id===id); }
+
+  // ---------- storage: meals ----------
+  function loadMeals(){
+    try{ return JSON.parse(localStorage.getItem(MEALS_KEY)) || {}; }catch(e){ return {}; }
+  }
+  function saveMeals(obj){ localStorage.setItem(MEALS_KEY, JSON.stringify(obj)); }
+  function mealFor(dateStr){ return loadMeals()[dateStr] || ''; }
 
   // ---------- holidays (US) ----------
   function nthWeekday(year, month, weekday, n){
@@ -590,12 +701,24 @@
   }
 
   function eventsFor(y,m,d){
-    const user = loadEvents().filter(ev => ev.m === m && ev.d === d && (ev.y === null || ev.y === y));
+    const jsWeekday = new Date(y,m,d).getDay();
+    const user = loadEvents().filter(ev => {
+      const rt = repeatType(ev);
+      if(rt==='weekly') return ev.weekday===jsWeekday;
+      if(rt==='yearly') return ev.m===m && ev.d===d;
+      return ev.y===y && ev.m===m && ev.d===d;
+    }).map(ev => Object.assign({}, ev, { icon: ev.who ? (memberById(ev.who)||{}).icon : null }));
     return holidaysFor(y,m,d).concat(user);
   }
   function hasEvent(y,m,d){
     if(holidaysFor(y,m,d).length) return true;
-    return loadEvents().some(ev => ev.m === m && ev.d === d && (ev.y === null || ev.y === y));
+    const jsWeekday = new Date(y,m,d).getDay();
+    return loadEvents().some(ev => {
+      const rt = repeatType(ev);
+      if(rt==='weekly') return ev.weekday===jsWeekday;
+      if(rt==='yearly') return ev.m===m && ev.d===d;
+      return ev.y===y && ev.m===m && ev.d===d;
+    });
   }
 
   // ---------- date helpers (week-start aware) ----------
@@ -623,6 +746,11 @@
     else if(state.view==='week') renderWeek();
     else renderYear();
     syncToolbar();
+  }
+
+  function evtChip(e){
+    const icon = e.icon ? `<span class="evt-icon">${e.icon}</span>` : '';
+    return `<div class="evt ${e.isHoliday?'holiday':''}" title="${escapeHtml(e.text)}">${icon}${escapeHtml(e.text)}</div>`;
   }
 
   function renderMonth(){
@@ -664,7 +792,7 @@
       html += `<div class="day-cell ${c.out?'out':''} ${isToday?'today':''}" data-y="${c.y}" data-m="${c.m}" data-d="${c.d}">
         <div class="day-num">${c.d}</div>
         <div class="evt-list">
-          ${shown.map(e=>`<div class="evt ${e.isHoliday?'holiday':''}" title="${escapeHtml(e.text)}">${escapeHtml(e.text)}</div>`).join('')}
+          ${shown.map(evtChip).join('')}
           ${extra>0?`<div class="evt more">+${extra} more</div>`:''}
         </div>
       </div>`;
@@ -692,14 +820,17 @@
       const y=d.getFullYear(), m=d.getMonth(), dnum=d.getDate();
       const isToday = isSameDate(today,y,m,dnum);
       const evts = eventsFor(y,m,dnum);
+      const dateStr = fmtDateInput(y,m,dnum);
+      const meal = mealFor(dateStr);
       html += `<div class="week-col ${isToday?'today':''}" data-y="${y}" data-m="${m}" data-d="${dnum}">
         <div class="week-col-head">
           <div class="dname">${labels[i]}</div>
           <div class="dnum">${dnum}</div>
         </div>
         <div class="week-col-events">
-          ${evts.map(e=>`<div class="evt ${e.isHoliday?'holiday':''}" title="${escapeHtml(e.text)}">${escapeHtml(e.text)}</div>`).join('')}
+          ${evts.map(evtChip).join('')}
         </div>
+        ${settings.showMeals ? `<div class="meal-row" data-meal="${dateStr}">🍽 ${meal ? escapeHtml(meal) : '<span class="meal-placeholder">Add dinner…</span>'}</div>` : ''}
         <div class="week-col-lines"></div>
       </div>`;
     }
@@ -707,6 +838,12 @@
     <div class="page-footer"><span>Generated with Printable Calendar</span><span>${label}</span></div>`;
     page.innerHTML = html;
     attachCellHandlers();
+    page.querySelectorAll('.meal-row').forEach(el=>{
+      el.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        openMealModal(el.dataset.meal);
+      });
+    });
   }
 
   function renderYear(){
@@ -786,6 +923,8 @@
     document.getElementById('weekDateInput').value = fmtDateInput(state.weekStart.getFullYear(), state.weekStart.getMonth(), state.weekStart.getDate());
     document.getElementById('mondayStartToggle').checked = settings.mondayStart;
     document.getElementById('holidaysToggle').checked = settings.showHolidays;
+    document.getElementById('mealsToggle').checked = settings.showMeals;
+    document.getElementById('inkSaverToggle').checked = settings.inkSaver;
   }
 
   document.getElementById('viewSeg').addEventListener('click', e=>{
@@ -825,25 +964,45 @@
   document.getElementById('holidaysToggle').addEventListener('change', (e)=>{
     settings.showHolidays = e.target.checked; saveSettings(); render();
   });
+  document.getElementById('mealsToggle').addEventListener('change', (e)=>{
+    settings.showMeals = e.target.checked; saveSettings(); render();
+  });
+  document.getElementById('inkSaverToggle').addEventListener('change', (e)=>{
+    settings.inkSaver = e.target.checked; saveSettings();
+    document.body.classList.toggle('ink-saver', settings.inkSaver);
+  });
 
   // ---------- single event modal ----------
   const eventModalBackdrop = document.getElementById('eventModalBackdrop');
   const eventDate = document.getElementById('eventDate');
   const eventText = document.getElementById('eventText');
-  const eventRecurring = document.getElementById('eventRecurring');
+  const eventWho = document.getElementById('eventWho');
+
+  function populateWhoSelect(){
+    eventWho.innerHTML = '<option value="">Everyone / general</option>';
+    loadMembers().forEach(mem=>{
+      const o = document.createElement('option');
+      o.value = mem.id; o.textContent = `${mem.icon} ${mem.name}`;
+      eventWho.appendChild(o);
+    });
+  }
 
   function openEventModal(id, prefillDateStr){
     state.editingId = id;
+    populateWhoSelect();
     document.getElementById('eventModalTitle').textContent = id ? 'Edit event' : 'Add event';
     if(id){
       const ev = loadEvents().find(e=>e.id===id);
-      eventDate.value = ev.y ? fmtDateInput(ev.y, ev.m, ev.d) : fmtDateInput(today.getFullYear(), ev.m, ev.d);
+      const rt = repeatType(ev);
+      eventDate.value = ev.y ? fmtDateInput(ev.y, ev.m, ev.d) : fmtDateInput(today.getFullYear(), ev.m!=null?ev.m:today.getMonth(), ev.d!=null?ev.d:today.getDate());
       eventText.value = ev.text;
-      eventRecurring.checked = ev.y === null;
+      eventWho.value = ev.who || '';
+      document.querySelector(`input[name=eventRepeat][value="${rt}"]`).checked = true;
     } else {
       eventDate.value = prefillDateStr || fmtDateInput(today.getFullYear(), today.getMonth(), today.getDate());
       eventText.value = '';
-      eventRecurring.checked = false;
+      eventWho.value = '';
+      document.querySelector('input[name=eventRepeat][value="none"]').checked = true;
     }
     eventModalBackdrop.style.display='flex';
     eventText.focus();
@@ -858,17 +1017,100 @@
     if(!val || !text){ alert('Please fill in a date and some text.'); return; }
     const parts = val.split('-').map(Number);
     const y = parts[0], m = parts[1]-1, d = parts[2];
-    const recurring = eventRecurring.checked;
+    const repeat = document.querySelector('input[name=eventRepeat]:checked').value;
+    const who = eventWho.value || null;
+    const jsWeekday = new Date(y,m,d).getDay();
+
+    let base;
+    if(repeat==='weekly') base = { y:null, m:null, d:null, weekday: jsWeekday, repeat:'weekly' };
+    else if(repeat==='yearly') base = { y:null, m, d, repeat:'yearly' };
+    else base = { y, m, d, repeat:'none' };
+
     let list = loadEvents();
     if(state.editingId){
-      list = list.map(e => e.id===state.editingId ? {...e, y: recurring?null:y, m, d, text} : e);
+      list = list.map(e => e.id===state.editingId ? Object.assign({id:e.id}, base, {text, who}) : e);
     } else {
-      list.push({id: uid(), y: recurring?null:y, m, d, text});
+      list.push(Object.assign({id: uid()}, base, {text, who}));
     }
     saveEvents(list);
     closeEventModal();
     render();
     if(manageModalBackdrop.style.display==='flex') renderManageList();
+  });
+
+  // ---------- meal modal ----------
+  const mealModalBackdrop = document.getElementById('mealModalBackdrop');
+  const mealText = document.getElementById('mealText');
+  function openMealModal(dateStr){
+    state.mealDate = dateStr;
+    const d = dateStr.split('-').map(Number);
+    document.getElementById('mealModalDateLabel').textContent = `Dinner for ${MONTH_NAMES[d[1]-1]} ${d[2]}`;
+    mealText.value = mealFor(dateStr);
+    mealModalBackdrop.style.display = 'flex';
+    mealText.focus();
+  }
+  function closeMealModal(){ mealModalBackdrop.style.display='none'; state.mealDate=null; }
+  document.getElementById('mealCancelBtn').addEventListener('click', closeMealModal);
+  mealModalBackdrop.addEventListener('click', e=>{ if(e.target===mealModalBackdrop) closeMealModal(); });
+  document.getElementById('mealSaveBtn').addEventListener('click', ()=>{
+    const meals = loadMeals();
+    const text = mealText.value.trim();
+    if(text) meals[state.mealDate] = text; else delete meals[state.mealDate];
+    saveMeals(meals);
+    closeMealModal();
+    render();
+  });
+
+  // ---------- family modal ----------
+  const familyModalBackdrop = document.getElementById('familyModalBackdrop');
+  const iconPicker = document.getElementById('iconPicker');
+  ICON_SET.forEach(icon=>{
+    const b = document.createElement('button');
+    b.type='button'; b.textContent=icon;
+    b.addEventListener('click', ()=>{
+      state.selectedIcon = icon;
+      iconPicker.querySelectorAll('button').forEach(x=>x.classList.remove('selected'));
+      b.classList.add('selected');
+    });
+    iconPicker.appendChild(b);
+  });
+  function renderMemberList(){
+    const wrap = document.getElementById('memberList');
+    const members = loadMembers();
+    if(members.length===0){
+      wrap.innerHTML = `<p style="color:var(--ink-soft);font-size:.85rem;">No family members added yet.</p>`;
+      return;
+    }
+    wrap.innerHTML = members.map(m=>`
+      <div class="member-row">
+        <div class="m-icon">${m.icon}</div>
+        <div class="m-name">${escapeHtml(m.name)}</div>
+        <button data-del-member="${m.id}" title="Remove" style="border:none;background:none;color:var(--danger);cursor:pointer;font-size:1rem;">✕</button>
+      </div>`).join('');
+    wrap.querySelectorAll('[data-del-member]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        saveMembers(loadMembers().filter(m=>m.id!==b.dataset.delMember));
+        renderMemberList(); render();
+      });
+    });
+  }
+  document.getElementById('familyBtn').addEventListener('click', ()=>{
+    familyModalBackdrop.style.display='flex';
+    renderMemberList();
+    document.getElementById('memberName').value='';
+    state.selectedIcon = ICON_SET[0];
+    iconPicker.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('selected', i===0));
+  });
+  document.getElementById('familyCloseBtn').addEventListener('click', ()=> familyModalBackdrop.style.display='none');
+  familyModalBackdrop.addEventListener('click', e=>{ if(e.target===familyModalBackdrop) familyModalBackdrop.style.display='none'; });
+  document.getElementById('addMemberBtn').addEventListener('click', ()=>{
+    const name = document.getElementById('memberName').value.trim();
+    if(!name){ alert('Enter a name first.'); return; }
+    const members = loadMembers();
+    members.push({ id: uid(), name, icon: state.selectedIcon });
+    saveMembers(members);
+    document.getElementById('memberName').value='';
+    renderMemberList();
   });
 
   // ---------- manage modal ----------
@@ -891,19 +1133,30 @@
     });
   });
 
+  function repeatLabel(ev){
+    const rt = repeatType(ev);
+    if(rt==='weekly') return `every ${DOW_SUN[ev.weekday]}`;
+    if(rt==='yearly') return `${MONTH_NAMES[ev.m]} ${ev.d} (yearly)`;
+    return `${MONTH_NAMES[ev.m]} ${ev.d}, ${ev.y}`;
+  }
+
   function renderManageList(){
-    const userList = loadEvents().slice().sort((a,b)=> a.m!==b.m ? a.m-b.m : a.d-b.d);
+    const userList = loadEvents().slice().sort((a,b)=>{
+      const am = a.m==null?-1:a.m, bm = b.m==null?-1:b.m;
+      return am!==bm ? am-bm : (a.d||0)-(b.d||0);
+    });
     const wrap = document.getElementById('evtManageList');
     if(userList.length===0){
       wrap.innerHTML = `<p style="color:var(--ink-soft);font-size:.85rem;">No events yet. Click a date on the calendar, or use the tabs above to add some.</p>`;
       return;
     }
     wrap.innerHTML = userList.map(e=>{
-      const dateLabel = `${MONTH_NAMES[e.m]} ${e.d}${e.y? ', '+e.y : ' (yearly)'}`;
+      const mem = e.who ? memberById(e.who) : null;
+      const icon = mem ? `${mem.icon} ` : '';
       return `<div class="evt-row">
         <div>
-          <div>${escapeHtml(e.text)}</div>
-          <div class="meta">${dateLabel}</div>
+          <div>${icon}${escapeHtml(e.text)}</div>
+          <div class="meta">${repeatLabel(e)}</div>
         </div>
         <div style="display:flex;gap:10px;">
           <button data-edit="${e.id}" title="Edit">✎</button>
@@ -923,9 +1176,13 @@
   }
 
   // ---------- flexible date parsing (grid + CSV) ----------
-  // Accepts: YYYY-MM-DD, M/D/YYYY, M/D (no year -> yearly)
+  // Accepts: YYYY-MM-DD, M/D/YYYY, M/D (no year -> yearly), or a weekday name -> weekly
   function parseFlexibleDate(str){
     str = (str||'').trim();
+    if(!str) return null;
+    const lower = str.toLowerCase();
+    const wIdx = WEEKDAY_NAMES.findIndex(n => n===lower || (lower.length>=3 && n.startsWith(lower)));
+    if(wIdx>=0) return { weekly:true, weekday:wIdx };
     let m1 = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
     if(m1) return { y:Number(m1[1]), m:Number(m1[2])-1, d:Number(m1[3]) };
     let m2 = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
@@ -936,13 +1193,18 @@
     if(m4) return { y:null, m:Number(m4[1])-1, d:Number(m4[2]) };
     return null;
   }
+  function eventFromParsed(parsed, text, yearlyFlag){
+    if(parsed.weekly) return { id:uid(), y:null, m:null, d:null, weekday:parsed.weekday, repeat:'weekly', text, who:null };
+    if(yearlyFlag || parsed.y===null) return { id:uid(), y:null, m:parsed.m, d:parsed.d, repeat:'yearly', text, who:null };
+    return { id:uid(), y:parsed.y, m:parsed.m, d:parsed.d, repeat:'none', text, who:null };
+  }
 
   // ---------- grid entry ----------
   const gridBody = document.getElementById('gridEntryBody');
   function addGridRow(prefill){
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><input type="text" class="g-date" placeholder="6/12/2026 or 6/12"></td>
+      <td><input type="text" class="g-date" placeholder="6/12/2026, 6/12, or Tuesday"></td>
       <td><input type="text" class="g-text" placeholder="e.g. Mom's birthday"></td>
       <td style="text-align:center;"><input type="checkbox" class="g-yearly"></td>
       <td><button class="rm-row" title="Remove row">✕</button></td>`;
@@ -955,10 +1217,9 @@
     }
     tr.querySelector('.rm-row').addEventListener('click', ()=> tr.remove());
 
-    // paste-a-grid support: paste tab/newline separated data into date field
     dateInput.addEventListener('paste', (e)=>{
       const pasted = (e.clipboardData || window.clipboardData).getData('text');
-      if(!pasted || !/[\t\n]/.test(pasted)) return; // let normal single paste happen
+      if(!pasted || !/[\t\n]/.test(pasted)) return;
       e.preventDefault();
       const rows = pasted.split(/\r?\n/).filter(r=>r.trim().length);
       rows.forEach((row,i)=>{
@@ -985,10 +1246,10 @@
       if(!dateStr && !text) return;
       const parsed = parseFlexibleDate(dateStr);
       if(!parsed || !text){ skipped++; return; }
-      newEvents.push({ id:uid(), y: yearly?null:parsed.y, m:parsed.m, d:parsed.d, text });
+      newEvents.push(eventFromParsed(parsed, text, yearly));
       added++;
     });
-    if(added===0){ alert('No complete rows to save. Each row needs a date and some text.'); return; }
+    if(added===0){ alert('No complete rows to save. Each row needs a date (or weekday) and some text.'); return; }
     saveEvents(loadEvents().concat(newEvents));
     resetGridEntry();
     renderManageList(); render();
@@ -998,12 +1259,13 @@
 
   // ---------- import / export ----------
   document.getElementById('exportJsonBtn').addEventListener('click', ()=>{
-    downloadFile('calendar-backup.json', JSON.stringify(loadEvents(), null, 2), 'application/json');
+    downloadFile('calendar-backup.json', JSON.stringify({events: loadEvents(), members: loadMembers(), meals: loadMeals()}, null, 2), 'application/json');
   });
   document.getElementById('downloadCsvTemplateBtn').addEventListener('click', ()=>{
     const example = `date,text,yearly
 6/12/1984,Mom's birthday,yes
 2026-12-25,Christmas with the Smiths,no
+Tuesday,Soccer practice,no
 3/17,St. Patrick's Day reminder,yes`;
     downloadFile('calendar-events-example.csv', example, 'text/csv');
   });
@@ -1026,16 +1288,24 @@
         let imported = [];
         if(file.name.toLowerCase().endsWith('.json')){
           const parsed = JSON.parse(reader.result);
-          imported = parsed.map(ev => ({
+          const evSource = Array.isArray(parsed) ? parsed : (parsed.events || []);
+          imported = evSource.map(ev => ({
             id: uid(),
             y: (ev.y===undefined || ev.y===null) ? null : Number(ev.y),
-            m: Number(ev.m),
-            d: Number(ev.d),
-            text: String(ev.text||'').trim()
-          })).filter(ev => ev.text && !isNaN(ev.m) && !isNaN(ev.d));
+            m: ev.m==null ? null : Number(ev.m),
+            d: ev.d==null ? null : Number(ev.d),
+            weekday: ev.weekday==null ? null : Number(ev.weekday),
+            repeat: ev.repeat || (ev.y===null ? 'yearly' : 'none'),
+            text: String(ev.text||'').trim(),
+            who: ev.who || null
+          })).filter(ev => ev.text);
+          if(!Array.isArray(parsed)){
+            if(parsed.members) saveMembers(parsed.members);
+            if(parsed.meals) saveMeals(parsed.meals);
+          }
         } else {
           let lines = reader.result.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
-          if(lines.length && /^date\s*,\s*text/i.test(lines[0])) lines = lines.slice(1); // skip header
+          if(lines.length && /^date\s*,\s*text/i.test(lines[0])) lines = lines.slice(1);
           imported = lines.map(line=>{
             const m0 = line.match(/^([^,]+),\s*"?([^",]*(?:""[^",]*)*)"?,\s*(yes|no)?\s*$/i)
                     || line.match(/^([^,]+),(.+)$/);
@@ -1045,8 +1315,7 @@
             const recurFlag = (m0[3]||'').toLowerCase();
             const parsed = parseFlexibleDate(datePart);
             if(!parsed || !text) return null;
-            const y = recurFlag === 'yes' ? null : parsed.y;
-            return {id:uid(), y, m:parsed.m, d:parsed.d, text};
+            return eventFromParsed(parsed, text, recurFlag==='yes');
           }).filter(Boolean);
         }
         if(imported.length===0){ alert('No valid events found in that file. Double check the date format against the example.'); return; }
