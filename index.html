@@ -124,13 +124,18 @@
     background:var(--paper);
     width:100%;
     max-width:1500px;
-    aspect-ratio:11/8.5;
     box-shadow:var(--shadow);
     border:1px solid var(--paper-line-strong);
     display:flex;
     flex-direction:column;
     padding:16px 20px 12px;
     position:relative;
+  }
+  /* Only lock the page to the print aspect ratio on wider screens.
+     On narrow phones, forcing a landscape ratio squeezes the grid short
+     enough that text overlaps — better to let it grow naturally there. */
+  @media (min-width:860px){
+    .calendar-page{ aspect-ratio:11/8.5; }
   }
   .page-header{
     display:flex;
@@ -408,13 +413,17 @@
   .icon-picker button.selected{ background:var(--accent);color:#fff;border-color:var(--accent); }
 
   /* ---------- Print ---------- */
-  @page{ size: letter landscape; margin: 0.25in; }
+  /* Explicit inch dimensions print more reliably across mobile print
+     services than the "landscape" keyword alone — some Android/Chrome
+     print pipelines otherwise still default to a portrait page and
+     squeeze/paginate this content across two pages. */
+  @page{ size: 11in 8.5in; margin: 0.25in; }
   @media print{
-    body{ background:#fff; }
+    html, body{ background:#fff; width:11in; height:8.5in; }
     .no-print{ display:none !important; }
-    .sheet-wrap{ padding:0; }
+    .sheet-wrap{ padding:0;width:11in;height:8.5in; }
     .calendar-page{
-      box-shadow:none;border:none;width:100%;height:100%;max-width:none;
+      box-shadow:none;border:none;width:11in;height:8.5in;max-width:none;
       aspect-ratio:auto;padding:0;
     }
     .evt{ background:none;border-left:2px solid var(--marker); }
@@ -424,6 +433,24 @@
   @media (max-width:720px){
     .page-title{ font-size:1.3rem; }
     .toolbar{ padding:10px; }
+  }
+
+  /* ---------- Print orientation hint ---------- */
+  .print-hint{
+    display:none;
+    align-items:center;
+    gap:10px;
+    background:var(--holiday-soft);
+    border-bottom:1px solid var(--paper-line-strong);
+    color:var(--ink);
+    font-size:.78rem;
+    line-height:1.4;
+    padding:8px 20px;
+  }
+  .print-hint.show{ display:flex; }
+  .print-hint button{
+    border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:.95rem;
+    margin-left:auto;flex-shrink:0;
   }
 
   /* ---------- Footer ---------- */
@@ -494,6 +521,11 @@
     <button class="btn" id="manageBtn">Events…</button>
     <button class="btn solid" id="printBtn">🖨 Print</button>
   </div>
+</div>
+
+<div class="print-hint no-print" id="printHint">
+  <span>📱 Printing from a phone? If the preview looks tall and skinny, open the print options and set <strong>Orientation</strong> to <strong>Landscape</strong> — the calendar is designed to print sideways.</span>
+  <button id="printHintClose" title="Dismiss">✕</button>
 </div>
 
 <div class="sheet-wrap">
@@ -667,6 +699,17 @@ Tuesday,Soccer practice,no
   }
   function saveSettings(){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
   document.body.classList.toggle('ink-saver', settings.inkSaver);
+
+  // ---------- print orientation hint ----------
+  const PRINT_HINT_KEY = 'pc_print_hint_dismissed';
+  const printHint = document.getElementById('printHint');
+  if(window.innerWidth < 860 && !localStorage.getItem(PRINT_HINT_KEY)){
+    printHint.classList.add('show');
+  }
+  document.getElementById('printHintClose').addEventListener('click', ()=>{
+    printHint.classList.remove('show');
+    localStorage.setItem(PRINT_HINT_KEY, '1');
+  });
 
   // ---------- storage: events ----------
   function loadEvents(){
