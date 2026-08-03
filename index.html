@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Printable Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAFAF7;
+    --paper-line:#E2DFD3;
+    --paper-line-strong:#C9C4B4;
+    --ink:#1C1B1A;
+    --ink-soft:#6B6759;
+    --accent:#2B4C7E;
+    --accent-dark:#203A61;
+    --accent-soft:#E4EBF4;
+    --marker:#4B7A5E;
+    --marker-soft:#E7EFE9;
+    --holiday:#9C6B3B;
+    --holiday-soft:#F3EAD9;
+    --danger:#9C3B3B;
+    --shadow: 0 1px 3px rgba(28,27,26,0.08), 0 8px 24px rgba(28,27,26,0.08);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:#EFECE3;
+    font-family:'Inter',system-ui,sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+  }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar{
+    background:var(--accent);
+    color:#fff;
+    padding:12px 20px;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:12px;
+    position:sticky;
+    top:0;
+    z-index:20;
+    box-shadow:var(--shadow);
+  }
+  .brand{
+    font-family:'Fraunces',serif;
+    font-size:1.25rem;
+    font-weight:600;
+    letter-spacing:.2px;
+    margin-right:4px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .brand .stamp{
+    width:20px;height:20px;border-radius:4px;
+    background:var(--marker);
+    display:inline-flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-weight:700;font-size:.66rem;color:#fff;
+    transform:rotate(-6deg);
+  }
+  .seg{
+    display:flex;
+    background:rgba(255,255,255,.14);
+    border-radius:8px;
+    padding:3px;
+    gap:2px;
+  }
+  .seg button{
+    border:none;background:transparent;color:#fff;
+    padding:6px 13px;border-radius:6px;font-size:.83rem;font-weight:600;
+    cursor:pointer;font-family:inherit;opacity:.78;
+    transition:background .15s,opacity .15s;
+  }
+  .seg button.active{ background:#fff;color:var(--accent-dark);opacity:1; }
+  .seg button:not(.active):hover{ opacity:1;background:rgba(255,255,255,.12); }
+
+  .toolbar select, .toolbar .navbtn, .toolbar input[type=date]{
+    font-family:inherit;font-size:.83rem;font-weight:600;
+    border:1px solid rgba(255,255,255,.35);
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    border-radius:6px;
+    padding:6px 9px;
+  }
+  .toolbar select option{ color:#1C1B1A; }
+  .toolbar .navbtn{ cursor:pointer;padding:6px 10px; }
+  .toolbar .navbtn:hover{ background:rgba(255,255,255,.2); }
+  .toolbar .spacer{ flex:1; }
+  .toolbar .actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .btn{
+    font-family:inherit;font-size:.83rem;font-weight:600;
+    border:1px solid rgba(255,255,255,.4);
+    background:rgba(255,255,255,.1);
+    color:#fff;border-radius:6px;padding:7px 12px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;
+    transition:background .15s;
+  }
+  .btn:hover{ background:rgba(255,255,255,.22); }
+  .btn.solid{ background:#fff;color:var(--accent-dark);border-color:#fff; }
+  .btn.solid:hover{ background:#f0eee6; }
+  .toggle-pill{
+    display:flex;align-items:center;gap:6px;
+    font-size:.8rem;font-weight:600;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.35);
+    border-radius:20px;padding:5px 10px 5px 6px;cursor:pointer;
+    user-select:none;
+  }
+  .toggle-pill input{ accent-color:#fff; }
+
+  /* ---------- Page wrap ---------- */
+  .sheet-wrap{
+    padding:24px 20px 60px;
+    display:flex;
+    justify-content:center;
+  }
+  .calendar-page{
+    background:var(--paper);
+    width:100%;
+    max-width:1500px;
+    aspect-ratio:11/8.5;
+    box-shadow:var(--shadow);
+    border:1px solid var(--paper-line-strong);
+    display:flex;
+    flex-direction:column;
+    padding:18px 24px 14px;
+    position:relative;
+  }
+  .page-header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:6px;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:6px;
+  }
+  .page-title{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:1.55rem;
+    letter-spacing:.3px;
+  }
+  .page-sub{
+    font-size:.72rem;
+    color:var(--ink-soft);
+    letter-spacing:.5px;
+    text-transform:uppercase;
+  }
+
+  /* ---------- Month grid ---------- */
+  .month-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    flex:1;
+    border-left:1px solid var(--paper-line);
+    border-top:1px solid var(--paper-line);
+    min-height:0;
+  }
+  .dow{
+    text-align:center;
+    font-size:.66rem;
+    font-weight:700;
+    letter-spacing:1px;
+    color:var(--ink-soft);
+    padding:3px 0 4px;
+    border-right:1px solid var(--paper-line);
+    border-bottom:1px solid var(--paper-line-strong);
+    text-transform:uppercase;
+  }
+  .day-cell{
+    border-right:1px solid var(--paper-line);
+    border-bottom:1px solid var(--paper-line);
+    padding:3px 6px;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    cursor:pointer;
+    position:relative;
+    background:var(--paper);
+  }
+  .day-cell:hover{ background:#F3F1E9; }
+  .day-cell.out{ background:repeating-linear-gradient(135deg,var(--paper),var(--paper) 6px,#F1EEE4 6px,#F1EEE4 7px); }
+  .day-cell.out .day-num{ color:#B9B4A4; }
+  .day-cell.today{ background:var(--accent-soft); }
+  .day-num{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:.82rem;
+    align-self:flex-end;
+    color:var(--ink);
+    min-width:18px;text-align:center;
+  }
+  .day-cell.today .day-num{
+    background:var(--accent); color:#fff; border-radius:50%;
+    width:19px;height:19px;display:flex;align-items:center;justify-content:center;
+    align-self:flex-end;
+  }
+  .evt-list{
+    margin-top:1px;
+    display:flex;
+    flex-direction:column;
+    gap:1px;
+    overflow:hidden;
+  }
+  .evt{
+    font-size:.62rem;
+    line-height:1.2;
+    color:var(--ink);
+    background:var(--marker-soft);
+    border-left:2px solid var(--marker);
+    padding:1px 4px;
+    border-radius:2px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .evt.holiday{ background:var(--holiday-soft); border-left-color:var(--holiday); color:var(--holiday); font-style:italic; }
+  .evt.more{ background:none;border:none;color:var(--ink-soft);font-weight:600;padding-left:2px; }
+
+  /* ---------- Week view ---------- */
+  .week-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    flex:1;
+    border-left:1px solid var(--paper-line);
+    border-top:1px solid var(--paper-line-strong);
+    min-height:0;
+  }
+  .week-col{
+    border-right:1px solid var(--paper-line);
+    border-bottom:1px solid var(--paper-line);
+    display:flex;
+    flex-direction:column;
+    cursor:pointer;
+  }
+  .week-col:hover{ background:#F3F1E9; }
+  .week-col.today{ background:var(--accent-soft); }
+  .week-col-head{
+    padding:6px 8px 4px;
+    border-bottom:1px solid var(--paper-line-strong);
+    text-align:center;
+  }
+  .week-col-head .dname{
+    font-size:.64rem;font-weight:700;letter-spacing:1.2px;color:var(--ink-soft);text-transform:uppercase;
+  }
+  .week-col-head .dnum{ font-family:'Fraunces',serif;font-weight:600;font-size:1.15rem; }
+  .week-col-events{ padding:5px 7px;display:flex;flex-direction:column;gap:3px; }
+  .week-col-lines{
+    flex:1;
+    background-image:repeating-linear-gradient(to bottom, transparent, transparent 20px, var(--paper-line) 20px, var(--paper-line) 21px);
+    background-position:0 4px;
+  }
+
+  /* ---------- Year view ---------- */
+  .year-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    grid-template-rows:repeat(3,1fr);
+    gap:12px;
+    flex:1;
+    padding-top:2px;
+    min-height:0;
+  }
+  .mini-month{
+    border:1px solid var(--paper-line-strong);
+    padding:5px 7px 6px;
+    display:flex;
+    flex-direction:column;
+    cursor:pointer;
+    background:var(--paper);
+  }
+  .mini-month:hover{ background:#F3F1E9; }
+  .mini-title{
+    font-family:'Fraunces',serif;font-weight:600;font-size:.76rem;
+    text-align:center;margin-bottom:3px;color:var(--accent-dark);
+  }
+  .mini-grid{ display:grid;grid-template-columns:repeat(7,1fr);gap:1px;flex:1; }
+  .mini-dow{ font-size:.5rem;text-align:center;color:var(--ink-soft);font-weight:700; }
+  .mini-cell{ font-size:.58rem;text-align:center;color:var(--ink);position:relative;padding:1px 0; }
+  .mini-cell.out{ color:#C9C4B4; }
+  .mini-cell.today{ background:var(--accent);color:#fff;border-radius:50%; }
+  .mini-dot{
+    width:3px;height:3px;border-radius:50%;background:var(--marker);
+    position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  }
+  .mini-cell.today .mini-dot{ background:#fff; }
+
+  .page-footer{
+    margin-top:6px;font-size:.62rem;color:var(--ink-soft);
+    display:flex;justify-content:space-between;
+  }
+
+  /* ---------- Modal ---------- */
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(28,27,26,.45);
+    display:flex;align-items:center;justify-content:center;
+    z-index:100;padding:20px;
+  }
+  .modal{
+    background:var(--paper);width:100%;max-width:480px;
+    border-radius:10px;box-shadow:var(--shadow);
+    padding:22px 24px;max-height:86vh;overflow:auto;
+  }
+  .modal.wide{ max-width:680px; }
+  .modal h2{
+    font-family:'Fraunces',serif;font-size:1.25rem;margin:0 0 14px;
+  }
+  .field{ margin-bottom:12px; }
+  .field label{ display:block;font-size:.78rem;font-weight:600;color:var(--ink-soft);margin-bottom:4px; }
+  .field input[type=text], .field input[type=date]{
+    width:100%;padding:8px 10px;border:1px solid var(--paper-line-strong);
+    border-radius:6px;font-family:inherit;font-size:.9rem;background:#fff;
+  }
+  .checkrow{ display:flex;align-items:center;gap:8px;margin-top:6px; }
+  .checkrow label{ font-size:.85rem;color:var(--ink); }
+  .modal-actions{ display:flex;gap:8px;justify-content:flex-end;margin-top:16px; }
+  .btn-plain{
+    font-family:inherit;font-size:.85rem;font-weight:600;padding:8px 14px;
+    border-radius:6px;border:1px solid var(--paper-line-strong);background:#fff;cursor:pointer;
+  }
+  .btn-primary{
+    font-family:inherit;font-size:.85rem;font-weight:600;padding:8px 14px;
+    border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;
+  }
+  .btn-danger{ color:var(--danger);border-color:var(--danger);background:#fff; }
+  hr.sep{ border:none;border-top:1px solid var(--paper-line-strong);margin:16px 0; }
+  .evt-manage-list{ max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:6px; }
+  .evt-row{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    font-size:.82rem;background:#fff;border:1px solid var(--paper-line);
+    border-radius:6px;padding:6px 9px;
+  }
+  .evt-row .meta{ color:var(--ink-soft);font-size:.72rem; }
+  .evt-row button{
+    border:none;background:none;color:var(--danger);cursor:pointer;font-size:1rem;line-height:1;
+  }
+
+  /* tabs inside manage modal */
+  .modal-tabs{ display:flex;gap:4px;border-bottom:1px solid var(--paper-line-strong);margin-bottom:14px; }
+  .modal-tabs button{
+    font-family:inherit;font-size:.82rem;font-weight:600;color:var(--ink-soft);
+    background:none;border:none;padding:8px 10px;cursor:pointer;border-bottom:2px solid transparent;
+  }
+  .modal-tabs button.active{ color:var(--accent-dark);border-bottom-color:var(--accent); }
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+
+  /* grid entry */
+  .grid-entry-table{ width:100%;border-collapse:collapse;font-size:.82rem; }
+  .grid-entry-table th{ text-align:left;font-size:.68rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;padding:2px 6px 6px; }
+  .grid-entry-table td{ padding:3px 6px 3px 0; vertical-align:middle; }
+  .grid-entry-table input[type=text]{
+    width:100%;padding:6px 8px;border:1px solid var(--paper-line-strong);border-radius:5px;font-family:inherit;font-size:.82rem;
+  }
+  .grid-entry-table input[type=checkbox]{ width:16px;height:16px; }
+  .grid-entry-table .rm-row{ border:none;background:none;color:var(--danger);cursor:pointer;font-size:1rem; }
+  .grid-help{ font-size:.72rem;color:var(--ink-soft);margin:6px 0 12px;line-height:1.5; }
+  .grid-help code{ background:#F1EEE4;padding:1px 4px;border-radius:3px; }
+
+  .csv-example{
+    background:#F1EEE4;border:1px solid var(--paper-line-strong);border-radius:6px;
+    padding:10px 12px;font-family:ui-monospace,Consolas,monospace;font-size:.76rem;
+    white-space:pre;overflow-x:auto;margin:8px 0 12px;line-height:1.6;
+  }
+  .import-export-row{ display:flex;gap:8px;flex-wrap:wrap; }
+  .advanced-block{ margin-top:16px;padding-top:12px;border-top:1px dashed var(--paper-line-strong); }
+  .advanced-block summary{ font-size:.78rem;font-weight:600;color:var(--ink-soft);cursor:pointer; }
+
+  /* ---------- Print ---------- */
+  @page{ size:landscape; margin:0.35in; }
+  @media print{
+    body{ background:#fff; }
+    .no-print{ display:none !important; }
+    .sheet-wrap{ padding:0; }
+    .calendar-page{
+      box-shadow:none;border:none;width:100%;height:100%;max-width:none;
+      aspect-ratio:auto;padding:0;
+    }
+    .evt{ background:none;border-left:2px solid var(--marker); }
+    .evt.holiday{ background:none;border-left-color:var(--holiday); }
+  }
+
+  @media (max-width:720px){
+    .page-title{ font-size:1.3rem; }
+    .toolbar{ padding:10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <div class="brand"><span class="stamp">31</span>Printable Calendar</div>
+
+  <div class="seg" id="viewSeg">
+    <button data-view="month" class="active">Month</button>
+    <button data-view="week">Week</button>
+    <button data-view="year">Year</button>
+  </div>
+
+  <div id="monthYearControls" style="display:flex;gap:8px;align-items:center;">
+    <button class="navbtn" id="prevBtn">‹</button>
+    <select id="monthSelect"></select>
+    <select id="yearSelect"></select>
+    <button class="navbtn" id="nextBtn">›</button>
+  </div>
+
+  <div id="weekControls" style="display:none;gap:8px;align-items:center;">
+    <button class="navbtn" id="prevWeekBtn">‹</button>
+    <input type="date" id="weekDateInput">
+    <button class="navbtn" id="nextWeekBtn">›</button>
+  </div>
+
+  <div id="yearOnlyControls" style="display:none;gap:8px;align-items:center;">
+    <button class="navbtn" id="prevYearBtn">‹</button>
+    <select id="yearOnlySelect"></select>
+    <button class="navbtn" id="nextYearBtn">›</button>
+  </div>
+
+  <button class="navbtn" id="todayBtn">Today</button>
+
+  <label class="toggle-pill"><input type="checkbox" id="mondayStartToggle"> Monday start</label>
+  <label class="toggle-pill"><input type="checkbox" id="holidaysToggle" checked> US holidays</label>
+
+  <div class="spacer"></div>
+
+  <div class="actions">
+    <button class="btn" id="manageBtn">Events…</button>
+    <button class="btn solid" id="printBtn">🖨 Print</button>
+  </div>
+</div>
+
+<div class="sheet-wrap">
+  <div class="calendar-page" id="calendarPage"></div>
+</div>
+
+<!-- Add/Edit single event modal -->
+<div class="modal-backdrop no-print" id="eventModalBackdrop" style="display:none;">
+  <div class="modal">
+    <h2 id="eventModalTitle">Add event</h2>
+    <div class="field">
+      <label for="eventDate">Date</label>
+      <input type="date" id="eventDate">
+    </div>
+    <div class="field">
+      <label for="eventText">Text</label>
+      <input type="text" id="eventText" placeholder="e.g. Mom's birthday, Rent due">
+    </div>
+    <div class="checkrow">
+      <input type="checkbox" id="eventRecurring">
+      <label for="eventRecurring">Repeats every year (birthdays, anniversaries)</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-plain" id="eventCancelBtn">Cancel</button>
+      <button class="btn-primary" id="eventSaveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Manage modal -->
+<div class="modal-backdrop no-print" id="manageModalBackdrop" style="display:none;">
+  <div class="modal wide">
+    <h2>Your events</h2>
+    <div class="modal-tabs">
+      <button class="mtab active" data-tab="list">List</button>
+      <button class="mtab" data-tab="grid">Add several at once</button>
+      <button class="mtab" data-tab="importexport">Import / export</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-list">
+      <button class="btn-primary" id="addNewEventBtn" style="margin-bottom:12px;">+ Add one event</button>
+      <div class="evt-manage-list" id="evtManageList"></div>
+    </div>
+
+    <div class="tab-panel" id="tab-grid">
+      <p class="grid-help">Type dates and text directly into the rows below, like a spreadsheet — or copy cells from Excel/Google Sheets and paste into the first Date box to fill in several rows at once. Dates can be <code>6/12/2026</code> or <code>6/12</code> (leave off the year for things that repeat yearly, like birthdays).</p>
+      <table class="grid-entry-table" id="gridEntryTable">
+        <thead><tr><th style="width:32%">Date</th><th>Text</th><th style="width:70px">Yearly</th><th></th></tr></thead>
+        <tbody id="gridEntryBody"></tbody>
+      </table>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn-plain" id="addGridRowBtn">+ Add row</button>
+        <button class="btn-primary" id="saveGridRowsBtn">Save all rows</button>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-importexport">
+      <div class="field">
+        <label>Import a spreadsheet (CSV)</label>
+        <p class="grid-help" style="margin-top:0;">Save your spreadsheet as a CSV file with three columns — date, text, and whether it repeats yearly. Example:</p>
+        <div class="csv-example">date,text,yearly
+6/12/1984,Mom's birthday,yes
+2026-12-25,Christmas with the Smiths,no
+3/17,St. Patrick's Day reminder,yes</div>
+        <div class="import-export-row">
+          <button class="btn-plain" id="downloadCsvTemplateBtn">Download example CSV</button>
+          <button class="btn-plain" id="importBtn">Choose CSV file to import…</button>
+          <input type="file" id="importInput" accept=".csv,.txt,.json" style="display:none;">
+        </div>
+      </div>
+      <details class="advanced-block">
+        <summary>Advanced: full backup file</summary>
+        <p class="grid-help">Saves every event to a single file you can keep as a backup, or use to move your events to another computer. Choose "Import" above and pick this file to restore it.</p>
+        <button class="btn-plain" id="exportJsonBtn">Download full backup</button>
+      </details>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-plain" id="manageCloseBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const DOW_SUN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const STORE_KEY = 'pc_events_v1';
+  const SETTINGS_KEY = 'pc_settings_v1';
+
+  const today = new Date();
+  const settings = Object.assign({ mondayStart:false, showHolidays:true }, loadSettings());
+
+  const state = {
+    view: 'month',
+    year: today.getFullYear(),
+    month: today.getMonth(),
+    weekStart: startOfWeek(today),
+    yearOnly: today.getFullYear(),
+    editingId: null
+  };
+
+  // ---------- settings ----------
+  function loadSettings(){
+    try{ return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; }catch(e){ return {}; }
+  }
+  function saveSettings(){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+
+  // ---------- storage ----------
+  function loadEvents(){
+    try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+    catch(e){ return []; }
+  }
+  function saveEvents(list){ localStorage.setItem(STORE_KEY, JSON.stringify(list)); }
+  function uid(){ return 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+  // ---------- holidays (US) ----------
+  function nthWeekday(year, month, weekday, n){
+    const first = new Date(year, month, 1);
+    const offset = (weekday - first.getDay() + 7) % 7;
+    return 1 + offset + (n - 1) * 7;
+  }
+  function lastWeekday(year, month, weekday){
+    const last = new Date(year, month + 1, 0);
+    return last.getDate() - ((last.getDay() - weekday + 7) % 7);
+  }
+  const holidayCache = {};
+  function getHolidays(year){
+    if(holidayCache[year]) return holidayCache[year];
+    const list = [
+      {m:0, d:1, name:"New Year's Day"},
+      {m:0, d:nthWeekday(year,0,1,3), name:"Martin Luther King Jr. Day"},
+      {m:1, d:14, name:"Valentine's Day"},
+      {m:1, d:nthWeekday(year,1,1,3), name:"Presidents Day"},
+      {m:4, d:nthWeekday(year,4,0,2), name:"Mother's Day"},
+      {m:4, d:lastWeekday(year,4,1), name:"Memorial Day"},
+      {m:5, d:19, name:"Juneteenth"},
+      {m:5, d:nthWeekday(year,5,0,3), name:"Father's Day"},
+      {m:6, d:4, name:"Independence Day"},
+      {m:8, d:nthWeekday(year,8,1,1), name:"Labor Day"},
+      {m:9, d:nthWeekday(year,9,1,2), name:"Columbus Day"},
+      {m:9, d:31, name:"Halloween"},
+      {m:10, d:11, name:"Veterans Day"},
+      {m:10, d:nthWeekday(year,10,4,4), name:"Thanksgiving"},
+      {m:11, d:25, name:"Christmas Day"},
+      {m:11, d:31, name:"New Year's Eve"}
+    ];
+    holidayCache[year] = list;
+    return list;
+  }
+  function holidaysFor(y,m,d){
+    if(!settings.showHolidays) return [];
+    return getHolidays(y).filter(h => h.m===m && h.d===d).map(h => ({text:h.name, isHoliday:true}));
+  }
+
+  function eventsFor(y,m,d){
+    const user = loadEvents().filter(ev => ev.m === m && ev.d === d && (ev.y === null || ev.y === y));
+    return holidaysFor(y,m,d).concat(user);
+  }
+  function hasEvent(y,m,d){
+    if(holidaysFor(y,m,d).length) return true;
+    return loadEvents().some(ev => ev.m === m && ev.d === d && (ev.y === null || ev.y === y));
+  }
+
+  // ---------- date helpers (week-start aware) ----------
+  function dowLabels(){
+    return settings.mondayStart ? DOW_SUN.slice(1).concat(DOW_SUN[0]) : DOW_SUN.slice();
+  }
+  function colIndexForJsDay(jsDay){
+    return settings.mondayStart ? (jsDay + 6) % 7 : jsDay;
+  }
+  function startOfWeek(date){
+    const d = new Date(date);
+    d.setHours(0,0,0,0);
+    d.setDate(d.getDate() - colIndexForJsDay(d.getDay()));
+    return d;
+  }
+  function addDays(date,n){ const d = new Date(date); d.setDate(d.getDate()+n); return d; }
+  function isSameDate(a,y,m,d){ return a.getFullYear()===y && a.getMonth()===m && a.getDate()===d; }
+  function fmtDateInput(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+  // ---------- rendering ----------
+  const page = document.getElementById('calendarPage');
+
+  function render(){
+    if(state.view==='month') renderMonth();
+    else if(state.view==='week') renderWeek();
+    else renderYear();
+    syncToolbar();
+  }
+
+  function renderMonth(){
+    const y = state.year, m = state.month;
+    const first = new Date(y,m,1);
+    const startOffset = colIndexForJsDay(first.getDay());
+    const numDays = new Date(y,m+1,0).getDate();
+    const prevMonthDays = new Date(y,m,0).getDate();
+    const totalCells = startOffset + numDays;
+    const rows = Math.ceil(totalCells / 7);
+    const gridCells = rows * 7;
+
+    let cells = [];
+    for(let i=0;i<startOffset;i++){
+      const dnum = prevMonthDays - startOffset + 1 + i;
+      cells.push({y: m===0?y-1:y, m: (m+11)%12, d: dnum, out:true});
+    }
+    for(let d=1; d<=numDays; d++){ cells.push({y,m,d,out:false}); }
+    let nextCount = 1;
+    while(cells.length < gridCells){
+      const nm = (m+1)%12, ny = m===11?y+1:y;
+      cells.push({y:ny,m:nm,d:nextCount, out:true});
+      nextCount++;
+    }
+
+    const labels = dowLabels();
+    let html = `<div class="page-header">
+      <div><div class="page-title">${MONTH_NAMES[m]} ${y}</div></div>
+      <div class="page-sub">Month view</div>
+    </div>
+    <div class="month-grid" style="grid-template-rows:auto repeat(${rows},1fr);">`;
+    labels.forEach(d => html += `<div class="dow">${d}</div>`);
+
+    cells.forEach(c => {
+      const isToday = isSameDate(today, c.y, c.m, c.d);
+      const evts = eventsFor(c.y,c.m,c.d);
+      const shown = evts.slice(0,3);
+      const extra = evts.length - shown.length;
+      html += `<div class="day-cell ${c.out?'out':''} ${isToday?'today':''}" data-y="${c.y}" data-m="${c.m}" data-d="${c.d}">
+        <div class="day-num">${c.d}</div>
+        <div class="evt-list">
+          ${shown.map(e=>`<div class="evt ${e.isHoliday?'holiday':''}" title="${escapeHtml(e.text)}">${escapeHtml(e.text)}</div>`).join('')}
+          ${extra>0?`<div class="evt more">+${extra} more</div>`:''}
+        </div>
+      </div>`;
+    });
+    html += `</div>
+    <div class="page-footer"><span>Generated with Printable Calendar</span><span>${MONTH_NAMES[m]} ${y}</span></div>`;
+    page.innerHTML = html;
+    attachCellHandlers();
+  }
+
+  function renderWeek(){
+    const ws = state.weekStart;
+    const we = addDays(ws,6);
+    const label = `${MONTH_NAMES[ws.getMonth()]} ${ws.getDate()}${ws.getFullYear()!==we.getFullYear()?', '+ws.getFullYear():''} – ${ws.getMonth()!==we.getMonth()?MONTH_NAMES[we.getMonth()]+' ':''}${we.getDate()}, ${we.getFullYear()}`;
+    const labels = dowLabels();
+
+    let html = `<div class="page-header">
+      <div><div class="page-title">Week of ${MONTH_NAMES[ws.getMonth()]} ${ws.getDate()}</div></div>
+      <div class="page-sub">${label}</div>
+    </div>
+    <div class="week-grid">`;
+
+    for(let i=0;i<7;i++){
+      const d = addDays(ws,i);
+      const y=d.getFullYear(), m=d.getMonth(), dnum=d.getDate();
+      const isToday = isSameDate(today,y,m,dnum);
+      const evts = eventsFor(y,m,dnum);
+      html += `<div class="week-col ${isToday?'today':''}" data-y="${y}" data-m="${m}" data-d="${dnum}">
+        <div class="week-col-head">
+          <div class="dname">${labels[i]}</div>
+          <div class="dnum">${dnum}</div>
+        </div>
+        <div class="week-col-events">
+          ${evts.map(e=>`<div class="evt ${e.isHoliday?'holiday':''}" title="${escapeHtml(e.text)}">${escapeHtml(e.text)}</div>`).join('')}
+        </div>
+        <div class="week-col-lines"></div>
+      </div>`;
+    }
+    html += `</div>
+    <div class="page-footer"><span>Generated with Printable Calendar</span><span>${label}</span></div>`;
+    page.innerHTML = html;
+    attachCellHandlers();
+  }
+
+  function renderYear(){
+    const y = state.yearOnly;
+    const labels = dowLabels();
+    let html = `<div class="page-header">
+      <div><div class="page-title">${y}</div></div>
+      <div class="page-sub">Year overview</div>
+    </div>
+    <div class="year-grid">`;
+
+    for(let m=0;m<12;m++){
+      const first = new Date(y,m,1);
+      const startOffset = colIndexForJsDay(first.getDay());
+      const numDays = new Date(y,m+1,0).getDate();
+      html += `<div class="mini-month" data-jump-month="${m}"><div class="mini-title">${MONTH_NAMES[m]}</div><div class="mini-grid">`;
+      labels.forEach(d=> html += `<div class="mini-dow">${d[0]}</div>`);
+      for(let i=0;i<startOffset;i++) html += `<div class="mini-cell out"></div>`;
+      for(let d=1; d<=numDays; d++){
+        const isToday = isSameDate(today,y,m,d);
+        const has = hasEvent(y,m,d);
+        html += `<div class="mini-cell ${isToday?'today':''}">${d}${has?'<span class="mini-dot"></span>':''}</div>`;
+      }
+      html += `</div></div>`;
+    }
+    html += `</div>
+    <div class="page-footer"><span>Generated with Printable Calendar</span><span>${y}</span></div>`;
+    page.innerHTML = html;
+
+    page.querySelectorAll('.mini-month').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        state.view='month';
+        state.year = y;
+        state.month = parseInt(el.dataset.jumpMonth,10);
+        render();
+      });
+    });
+  }
+
+  function attachCellHandlers(){
+    page.querySelectorAll('[data-y][data-m][data-d]').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const y = parseInt(el.dataset.y,10), m = parseInt(el.dataset.m,10), d = parseInt(el.dataset.d,10);
+        openEventModal(null, fmtDateInput(y,m,d));
+      });
+    });
+  }
+
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------- toolbar wiring ----------
+  const monthSelect = document.getElementById('monthSelect');
+  const yearSelect = document.getElementById('yearSelect');
+  const yearOnlySelect = document.getElementById('yearOnlySelect');
+  MONTH_NAMES.forEach((n,i)=>{
+    const o = document.createElement('option'); o.value=i; o.textContent=n; monthSelect.appendChild(o);
+  });
+  function populateYearOptions(sel){
+    sel.innerHTML='';
+    for(let y=today.getFullYear()-5; y<=today.getFullYear()+10; y++){
+      const o=document.createElement('option'); o.value=y; o.textContent=y; sel.appendChild(o);
+    }
+  }
+  populateYearOptions(yearSelect);
+  populateYearOptions(yearOnlySelect);
+
+  function syncToolbar(){
+    document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('active', b.dataset.view===state.view));
+    document.getElementById('monthYearControls').style.display = state.view==='month' ? 'flex':'none';
+    document.getElementById('weekControls').style.display = state.view==='week' ? 'flex':'none';
+    document.getElementById('yearOnlyControls').style.display = state.view==='year' ? 'flex':'none';
+    monthSelect.value = state.month;
+    yearSelect.value = state.year;
+    yearOnlySelect.value = state.yearOnly;
+    document.getElementById('weekDateInput').value = fmtDateInput(state.weekStart.getFullYear(), state.weekStart.getMonth(), state.weekStart.getDate());
+    document.getElementById('mondayStartToggle').checked = settings.mondayStart;
+    document.getElementById('holidaysToggle').checked = settings.showHolidays;
+  }
+
+  document.getElementById('viewSeg').addEventListener('click', e=>{
+    const btn = e.target.closest('button[data-view]');
+    if(!btn) return;
+    state.view = btn.dataset.view;
+    render();
+  });
+  monthSelect.addEventListener('change', ()=>{ state.month=parseInt(monthSelect.value,10); render(); });
+  yearSelect.addEventListener('change', ()=>{ state.year=parseInt(yearSelect.value,10); render(); });
+  yearOnlySelect.addEventListener('change', ()=>{ state.yearOnly=parseInt(yearOnlySelect.value,10); render(); });
+  document.getElementById('prevBtn').addEventListener('click', ()=>{
+    state.month--; if(state.month<0){state.month=11; state.year--;} render();
+  });
+  document.getElementById('nextBtn').addEventListener('click', ()=>{
+    state.month++; if(state.month>11){state.month=0; state.year++;} render();
+  });
+  document.getElementById('prevYearBtn').addEventListener('click', ()=>{ state.yearOnly--; render(); });
+  document.getElementById('nextYearBtn').addEventListener('click', ()=>{ state.yearOnly++; render(); });
+  document.getElementById('prevWeekBtn').addEventListener('click', ()=>{ state.weekStart = addDays(state.weekStart,-7); render(); });
+  document.getElementById('nextWeekBtn').addEventListener('click', ()=>{ state.weekStart = addDays(state.weekStart,7); render(); });
+  document.getElementById('weekDateInput').addEventListener('change', (e)=>{
+    const parts = e.target.value.split('-').map(Number);
+    if(parts.length===3){ state.weekStart = startOfWeek(new Date(parts[0],parts[1]-1,parts[2])); render(); }
+  });
+  document.getElementById('todayBtn').addEventListener('click', ()=>{
+    state.year = today.getFullYear(); state.month = today.getMonth();
+    state.yearOnly = today.getFullYear(); state.weekStart = startOfWeek(today);
+    render();
+  });
+  document.getElementById('printBtn').addEventListener('click', ()=> window.print());
+  document.getElementById('mondayStartToggle').addEventListener('change', (e)=>{
+    settings.mondayStart = e.target.checked; saveSettings();
+    state.weekStart = startOfWeek(state.weekStart);
+    render();
+  });
+  document.getElementById('holidaysToggle').addEventListener('change', (e)=>{
+    settings.showHolidays = e.target.checked; saveSettings(); render();
+  });
+
+  // ---------- single event modal ----------
+  const eventModalBackdrop = document.getElementById('eventModalBackdrop');
+  const eventDate = document.getElementById('eventDate');
+  const eventText = document.getElementById('eventText');
+  const eventRecurring = document.getElementById('eventRecurring');
+
+  function openEventModal(id, prefillDateStr){
+    state.editingId = id;
+    document.getElementById('eventModalTitle').textContent = id ? 'Edit event' : 'Add event';
+    if(id){
+      const ev = loadEvents().find(e=>e.id===id);
+      eventDate.value = ev.y ? fmtDateInput(ev.y, ev.m, ev.d) : fmtDateInput(today.getFullYear(), ev.m, ev.d);
+      eventText.value = ev.text;
+      eventRecurring.checked = ev.y === null;
+    } else {
+      eventDate.value = prefillDateStr || fmtDateInput(today.getFullYear(), today.getMonth(), today.getDate());
+      eventText.value = '';
+      eventRecurring.checked = false;
+    }
+    eventModalBackdrop.style.display='flex';
+    eventText.focus();
+  }
+  function closeEventModal(){ eventModalBackdrop.style.display='none'; state.editingId=null; }
+  document.getElementById('eventCancelBtn').addEventListener('click', closeEventModal);
+  eventModalBackdrop.addEventListener('click', e=>{ if(e.target===eventModalBackdrop) closeEventModal(); });
+
+  document.getElementById('eventSaveBtn').addEventListener('click', ()=>{
+    const val = eventDate.value;
+    const text = eventText.value.trim();
+    if(!val || !text){ alert('Please fill in a date and some text.'); return; }
+    const parts = val.split('-').map(Number);
+    const y = parts[0], m = parts[1]-1, d = parts[2];
+    const recurring = eventRecurring.checked;
+    let list = loadEvents();
+    if(state.editingId){
+      list = list.map(e => e.id===state.editingId ? {...e, y: recurring?null:y, m, d, text} : e);
+    } else {
+      list.push({id: uid(), y: recurring?null:y, m, d, text});
+    }
+    saveEvents(list);
+    closeEventModal();
+    render();
+    if(manageModalBackdrop.style.display==='flex') renderManageList();
+  });
+
+  // ---------- manage modal ----------
+  const manageModalBackdrop = document.getElementById('manageModalBackdrop');
+  document.getElementById('manageBtn').addEventListener('click', ()=>{
+    manageModalBackdrop.style.display='flex';
+    renderManageList();
+    resetGridEntry();
+  });
+  document.getElementById('manageCloseBtn').addEventListener('click', ()=> manageModalBackdrop.style.display='none');
+  manageModalBackdrop.addEventListener('click', e=>{ if(e.target===manageModalBackdrop) manageModalBackdrop.style.display='none'; });
+  document.getElementById('addNewEventBtn').addEventListener('click', ()=> openEventModal(null,null));
+
+  document.querySelectorAll('.mtab').forEach(tabBtn=>{
+    tabBtn.addEventListener('click', ()=>{
+      document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+      tabBtn.classList.add('active');
+      document.getElementById('tab-'+tabBtn.dataset.tab).classList.add('active');
+    });
+  });
+
+  function renderManageList(){
+    const userList = loadEvents().slice().sort((a,b)=> a.m!==b.m ? a.m-b.m : a.d-b.d);
+    const wrap = document.getElementById('evtManageList');
+    if(userList.length===0){
+      wrap.innerHTML = `<p style="color:var(--ink-soft);font-size:.85rem;">No events yet. Click a date on the calendar, or use the tabs above to add some.</p>`;
+      return;
+    }
+    wrap.innerHTML = userList.map(e=>{
+      const dateLabel = `${MONTH_NAMES[e.m]} ${e.d}${e.y? ', '+e.y : ' (yearly)'}`;
+      return `<div class="evt-row">
+        <div>
+          <div>${escapeHtml(e.text)}</div>
+          <div class="meta">${dateLabel}</div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button data-edit="${e.id}" title="Edit">✎</button>
+          <button data-del="${e.id}" title="Delete">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+    wrap.querySelectorAll('[data-del]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        saveEvents(loadEvents().filter(e=>e.id!==b.dataset.del));
+        renderManageList(); render();
+      });
+    });
+    wrap.querySelectorAll('[data-edit]').forEach(b=>{
+      b.addEventListener('click', ()=> openEventModal(b.dataset.edit, null));
+    });
+  }
+
+  // ---------- flexible date parsing (grid + CSV) ----------
+  // Accepts: YYYY-MM-DD, M/D/YYYY, M/D (no year -> yearly)
+  function parseFlexibleDate(str){
+    str = (str||'').trim();
+    let m1 = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if(m1) return { y:Number(m1[1]), m:Number(m1[2])-1, d:Number(m1[3]) };
+    let m2 = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if(m2) return { y:Number(m2[3]), m:Number(m2[1])-1, d:Number(m2[2]) };
+    let m3 = str.match(/^(\d{1,2})\/(\d{1,2})$/);
+    if(m3) return { y:null, m:Number(m3[1])-1, d:Number(m3[2]) };
+    let m4 = str.match(/^(\d{1,2})-(\d{1,2})$/);
+    if(m4) return { y:null, m:Number(m4[1])-1, d:Number(m4[2]) };
+    return null;
+  }
+
+  // ---------- grid entry ----------
+  const gridBody = document.getElementById('gridEntryBody');
+  function addGridRow(prefill){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="g-date" placeholder="6/12/2026 or 6/12"></td>
+      <td><input type="text" class="g-text" placeholder="e.g. Mom's birthday"></td>
+      <td style="text-align:center;"><input type="checkbox" class="g-yearly"></td>
+      <td><button class="rm-row" title="Remove row">✕</button></td>`;
+    gridBody.appendChild(tr);
+    const dateInput = tr.querySelector('.g-date');
+    const textInput = tr.querySelector('.g-text');
+    const yearlyInput = tr.querySelector('.g-yearly');
+    if(prefill){
+      dateInput.value = prefill.date||''; textInput.value = prefill.text||''; yearlyInput.checked = !!prefill.yearly;
+    }
+    tr.querySelector('.rm-row').addEventListener('click', ()=> tr.remove());
+
+    // paste-a-grid support: paste tab/newline separated data into date field
+    dateInput.addEventListener('paste', (e)=>{
+      const pasted = (e.clipboardData || window.clipboardData).getData('text');
+      if(!pasted || !/[\t\n]/.test(pasted)) return; // let normal single paste happen
+      e.preventDefault();
+      const rows = pasted.split(/\r?\n/).filter(r=>r.trim().length);
+      rows.forEach((row,i)=>{
+        const cols = row.split('\t');
+        const rowData = { date: (cols[0]||'').trim(), text:(cols[1]||'').trim(), yearly: /^y/i.test((cols[2]||'').trim()) };
+        if(i===0){ dateInput.value=rowData.date; textInput.value=rowData.text; yearlyInput.checked=rowData.yearly; }
+        else addGridRow(rowData);
+      });
+    });
+  }
+  function resetGridEntry(){
+    gridBody.innerHTML='';
+    for(let i=0;i<4;i++) addGridRow();
+  }
+  document.getElementById('addGridRowBtn').addEventListener('click', ()=> addGridRow());
+  document.getElementById('saveGridRowsBtn').addEventListener('click', ()=>{
+    const rows = Array.from(gridBody.querySelectorAll('tr'));
+    let added = 0, skipped = 0;
+    const newEvents = [];
+    rows.forEach(tr=>{
+      const dateStr = tr.querySelector('.g-date').value;
+      const text = tr.querySelector('.g-text').value.trim();
+      const yearly = tr.querySelector('.g-yearly').checked;
+      if(!dateStr && !text) return;
+      const parsed = parseFlexibleDate(dateStr);
+      if(!parsed || !text){ skipped++; return; }
+      newEvents.push({ id:uid(), y: yearly?null:parsed.y, m:parsed.m, d:parsed.d, text });
+      added++;
+    });
+    if(added===0){ alert('No complete rows to save. Each row needs a date and some text.'); return; }
+    saveEvents(loadEvents().concat(newEvents));
+    resetGridEntry();
+    renderManageList(); render();
+    document.querySelector('.mtab[data-tab="list"]').click();
+    alert(`Added ${added} event(s).${skipped?` (${skipped} row(s) skipped — check the date format.)`:''}`);
+  });
+
+  // ---------- import / export ----------
+  document.getElementById('exportJsonBtn').addEventListener('click', ()=>{
+    downloadFile('calendar-backup.json', JSON.stringify(loadEvents(), null, 2), 'application/json');
+  });
+  document.getElementById('downloadCsvTemplateBtn').addEventListener('click', ()=>{
+    const example = `date,text,yearly
+6/12/1984,Mom's birthday,yes
+2026-12-25,Christmas with the Smiths,no
+3/17,St. Patrick's Day reminder,yes`;
+    downloadFile('calendar-events-example.csv', example, 'text/csv');
+  });
+  function downloadFile(filename, content, mime){
+    const blob = new Blob([content], {type:mime});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  }
+
+  document.getElementById('importBtn').addEventListener('click', ()=> document.getElementById('importInput').click());
+  document.getElementById('importInput').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        let imported = [];
+        if(file.name.toLowerCase().endsWith('.json')){
+          const parsed = JSON.parse(reader.result);
+          imported = parsed.map(ev => ({
+            id: uid(),
+            y: (ev.y===undefined || ev.y===null) ? null : Number(ev.y),
+            m: Number(ev.m),
+            d: Number(ev.d),
+            text: String(ev.text||'').trim()
+          })).filter(ev => ev.text && !isNaN(ev.m) && !isNaN(ev.d));
+        } else {
+          let lines = reader.result.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+          if(lines.length && /^date\s*,\s*text/i.test(lines[0])) lines = lines.slice(1); // skip header
+          imported = lines.map(line=>{
+            const m0 = line.match(/^([^,]+),\s*"?([^",]*(?:""[^",]*)*)"?,\s*(yes|no)?\s*$/i)
+                    || line.match(/^([^,]+),(.+)$/);
+            if(!m0) return null;
+            const datePart = m0[1].trim();
+            let text = (m0[2]||'').trim().replace(/^"|"$/g,'').replace(/""/g,'"');
+            const recurFlag = (m0[3]||'').toLowerCase();
+            const parsed = parseFlexibleDate(datePart);
+            if(!parsed || !text) return null;
+            const y = recurFlag === 'yes' ? null : parsed.y;
+            return {id:uid(), y, m:parsed.m, d:parsed.d, text};
+          }).filter(Boolean);
+        }
+        if(imported.length===0){ alert('No valid events found in that file. Double check the date format against the example.'); return; }
+        const merged = loadEvents().concat(imported);
+        saveEvents(merged);
+        renderManageList(); render();
+        document.querySelector('.mtab[data-tab="list"]').click();
+        alert(`Imported ${imported.length} event(s).`);
+      }catch(err){
+        alert('Could not read that file: ' + err.message);
+      }
+      e.target.value = '';
+    };
+    reader.readAsText(file);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
