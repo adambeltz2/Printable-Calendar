@@ -295,6 +295,7 @@
     flex:2.3;
     display:flex;
     flex-direction:column;
+    min-height:0;
     border-top:1px solid var(--paper-line-strong);
     border-left:1px solid var(--paper-line-strong);
   }
@@ -302,6 +303,8 @@
     display:flex;
     align-items:stretch;
     flex:1;
+    min-height:0;
+    overflow:hidden;
     border-right:1px solid var(--paper-line-strong);
     border-bottom:1px solid var(--paper-line-strong);
     position:relative;
@@ -323,6 +326,7 @@
     display:flex;
     flex-direction:column;
     gap:12px;
+    min-height:0;
     border-left:1px solid var(--paper-line-strong);
     padding-left:16px;
     min-width:0;
@@ -341,6 +345,52 @@
     background-image:repeating-linear-gradient(to bottom, transparent, transparent 17px, var(--paper-line) 17px, var(--paper-line) 18px);
   }
   body.ink-saver .hour-row:nth-child(even){ background:none; }
+
+  /* ---------- Multi-day print batch ---------- */
+  .print-batch{ display:none; }
+  .print-batch-page, .print-batch-pair{
+    background:var(--paper);
+    display:flex;
+    flex-direction:column;
+    padding:16px 20px 12px;
+  }
+  .print-batch-pair .pair-cols{
+    display:flex;
+    flex:1;
+    min-height:0;
+    gap:20px;
+  }
+  .print-batch-pair .pair-col{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+    min-height:0;
+    border-right:1px solid var(--paper-line-strong);
+    padding-right:20px;
+  }
+  .print-batch-pair .pair-col:last-child{ border-right:none;padding-right:0; }
+  .pair-col .page-title{ font-size:1.2rem; }
+  .pair-col .hour-label{ width:40px;font-size:.56rem; }
+  .pair-col .day-events-row{ padding:2px 3px; }
+  .pair-col .evt{ font-size:.58rem; }
+  .compact-meal{
+    margin-top:8px;font-size:.66rem;color:var(--ink-soft);
+    border-top:1px dashed var(--paper-line-strong);padding-top:4px;flex-shrink:0;
+  }
+  .compact-meal .meal-placeholder{ color:#B9B4A4;font-style:italic; }
+
+  @media print{
+    body.printing-batch .sheet-wrap{ display:none; }
+    body.printing-batch .print-batch{ display:block; }
+    .print-batch-page, .print-batch-pair{
+      width:100%;height:100%;
+      page-break-after:always; break-after:page;
+    }
+    .print-batch-page:last-child, .print-batch-pair:last-child{
+      page-break-after:auto; break-after:auto;
+    }
+  }
 
   /* ---------- Year view ---------- */
   .year-grid{
@@ -620,6 +670,8 @@
   <div class="calendar-page" id="calendarPage"></div>
 </div>
 
+<div class="print-batch" id="printBatchContainer"></div>
+
 <footer class="site-footer no-print">
   <a href="https://github.com/adambeltz2/Printable-Calendar" target="_blank" rel="noopener noreferrer">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
@@ -672,6 +724,40 @@
     <div class="modal-actions">
       <button class="btn-plain" id="mealCancelBtn">Cancel</button>
       <button class="btn-primary" id="mealSaveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Day print options modal -->
+<div class="modal-backdrop no-print" id="dayPrintModalBackdrop" style="display:none;">
+  <div class="modal">
+    <h2>Print day view</h2>
+    <div class="field">
+      <div class="radio-group">
+        <label><input type="radio" name="dayPrintRange" value="single" checked> Just <span id="dayPrintSingleLabel">this day</span></label>
+        <label><input type="radio" name="dayPrintRange" value="range"> A range of days</label>
+      </div>
+    </div>
+    <div id="dayPrintRangeFields" style="display:none;">
+      <div class="field">
+        <label for="dayPrintStart">Start date</label>
+        <input type="date" id="dayPrintStart">
+      </div>
+      <div class="field">
+        <label for="dayPrintEnd">End date</label>
+        <input type="date" id="dayPrintEnd">
+      </div>
+    </div>
+    <div class="field">
+      <label>Pages</label>
+      <div class="radio-group">
+        <label><input type="radio" name="dayPrintPerPage" value="1" checked> One day per page (full detail)</label>
+        <label><input type="radio" name="dayPrintPerPage" value="2"> Two days per page (compact)</label>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-plain" id="dayPrintCancelBtn">Cancel</button>
+      <button class="btn-primary" id="dayPrintGoBtn">🖨 Print</button>
     </div>
   </div>
 </div>
@@ -1015,9 +1101,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     attachCellHandlers();
   }
 
-  function renderDay(){
-    const d = state.dayDate;
-    const y = d.getFullYear(), m = d.getMonth(), dnum = d.getDate();
+  function dayContentHtml(date, opts){
+    opts = opts || {};
+    const compact = !!opts.compact;
+    const y = date.getFullYear(), m = date.getMonth(), dnum = date.getDate();
     const dateStr = fmtDateInput(y,m,dnum);
     const evts = eventsFor(y,m,dnum);
     const meal = mealFor(dateStr);
@@ -1027,10 +1114,22 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       hoursHtml += `<div class="hour-row"><div class="hour-label">${formatHourLabel(h)}</div><div class="hour-line"></div></div>`;
     }
 
-    const priorityLines = [1,2,3].map(()=>`<div class="priority-line"><span class="box"></span><span class="priority-fill"></span></div>`).join('');
+    if(compact){
+      return `<div class="page-header">
+        <div><div class="page-title">${FULL_DOW[date.getDay()]}, ${MONTH_NAMES[m]} ${dnum}</div></div>
+        <div class="page-sub">Day view</div>
+      </div>
+      <div class="day-events-row" data-y="${y}" data-m="${m}" data-d="${dnum}">
+        ${evts.length ? evts.map(evtChip).join('') : '<span class="day-events-empty">No events</span>'}
+      </div>
+      <div class="day-hours">${hoursHtml}</div>
+      ${settings.showMeals ? `<div class="compact-meal">🍽 ${meal ? escapeHtml(meal) : '<span class="meal-placeholder">Dinner: —</span>'}</div>` : ''}`;
+    }
 
-    let html = `<div class="page-header">
-      <div><div class="page-title">${FULL_DOW[d.getDay()]}, ${MONTH_NAMES[m]} ${dnum}</div></div>
+    const priorityLines = [1,2,3,4,5].map(()=>`<div class="priority-line"><span class="box"></span><span class="priority-fill"></span></div>`).join('');
+
+    return `<div class="page-header">
+      <div><div class="page-title">${FULL_DOW[date.getDay()]}, ${MONTH_NAMES[m]} ${dnum}</div></div>
       <div class="page-sub">Day view</div>
     </div>
     <div class="day-events-row" data-y="${y}" data-m="${m}" data-d="${dnum}">
@@ -1054,7 +1153,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       </div>
     </div>
     ${footerHtml()}`;
-    page.innerHTML = html;
+  }
+
+  function renderDay(){
+    const d = state.dayDate;
+    page.innerHTML = dayContentHtml(d, {compact:false});
     attachCellHandlers();
     page.querySelectorAll('.meal-row').forEach(el=>{
       el.addEventListener('click', (e)=>{
@@ -1225,7 +1328,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     state.dayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     render();
   });
-  document.getElementById('printBtn').addEventListener('click', ()=> window.print());
+  document.getElementById('printBtn').addEventListener('click', ()=>{
+    if(state.view === 'day') openDayPrintModal();
+    else window.print();
+  });
   document.getElementById('mondayStartToggle').addEventListener('change', (e)=>{
     settings.mondayStart = e.target.checked; saveSettings();
     state.weekStart = startOfWeek(state.weekStart);
@@ -1329,6 +1435,97 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     saveMeals(meals);
     closeMealModal();
     render();
+  });
+
+  // ---------- day print modal ----------
+  const dayPrintModalBackdrop = document.getElementById('dayPrintModalBackdrop');
+  const dayPrintStart = document.getElementById('dayPrintStart');
+  const dayPrintEnd = document.getElementById('dayPrintEnd');
+  const dayPrintRangeFields = document.getElementById('dayPrintRangeFields');
+  const printBatchContainer = document.getElementById('printBatchContainer');
+  const MAX_PRINT_DAYS = 62;
+
+  function openDayPrintModal(){
+    const d = state.dayDate;
+    document.getElementById('dayPrintSingleLabel').textContent =
+      `${FULL_DOW[d.getDay()]}, ${MONTH_NAMES[d.getMonth()]} ${d.getDate()}`;
+    document.querySelector('input[name=dayPrintRange][value="single"]').checked = true;
+    document.querySelector('input[name=dayPrintPerPage][value="1"]').checked = true;
+    dayPrintRangeFields.style.display = 'none';
+    const dstr = fmtDateInput(d.getFullYear(), d.getMonth(), d.getDate());
+    dayPrintStart.value = dstr;
+    dayPrintEnd.value = dstr;
+    dayPrintModalBackdrop.style.display = 'flex';
+  }
+  function closeDayPrintModal(){ dayPrintModalBackdrop.style.display = 'none'; }
+  document.getElementById('dayPrintCancelBtn').addEventListener('click', closeDayPrintModal);
+  dayPrintModalBackdrop.addEventListener('click', e=>{ if(e.target===dayPrintModalBackdrop) closeDayPrintModal(); });
+  document.querySelectorAll('input[name=dayPrintRange]').forEach(r=>{
+    r.addEventListener('change', ()=>{
+      dayPrintRangeFields.style.display = document.querySelector('input[name=dayPrintRange]:checked').value==='range' ? 'block' : 'none';
+    });
+  });
+
+  function collectDateRange(startStr, endStr){
+    let start = startStr.split('-').map(Number);
+    let end = endStr.split('-').map(Number);
+    let a = new Date(start[0], start[1]-1, start[2]);
+    let b = new Date(end[0], end[1]-1, end[2]);
+    if(a > b){ const tmp=a; a=b; b=tmp; }
+    const dates = [];
+    let cur = new Date(a);
+    while(cur <= b && dates.length < MAX_PRINT_DAYS){
+      dates.push(new Date(cur));
+      cur = addDays(cur, 1);
+    }
+    return dates;
+  }
+
+  document.getElementById('dayPrintGoBtn').addEventListener('click', ()=>{
+    const rangeMode = document.querySelector('input[name=dayPrintRange]:checked').value;
+    const perPage = parseInt(document.querySelector('input[name=dayPrintPerPage]:checked').value, 10);
+    let dates;
+    if(rangeMode === 'single'){
+      dates = [state.dayDate];
+    } else {
+      if(!dayPrintStart.value || !dayPrintEnd.value){ alert('Pick a start and end date.'); return; }
+      dates = collectDateRange(dayPrintStart.value, dayPrintEnd.value);
+      if(dates.length === 0){ alert('That date range is empty.'); return; }
+    }
+    closeDayPrintModal();
+    printDayBatch(dates, perPage);
+  });
+
+  function printDayBatch(dates, perPage){
+    printBatchContainer.innerHTML = '';
+    if(perPage === 1){
+      dates.forEach(d=>{
+        const div = document.createElement('div');
+        div.className = 'calendar-page print-batch-page';
+        div.innerHTML = dayContentHtml(d, {compact:false});
+        printBatchContainer.appendChild(div);
+      });
+    } else {
+      for(let i=0; i<dates.length; i+=2){
+        const div = document.createElement('div');
+        div.className = 'calendar-page print-batch-pair';
+        const left = dates[i], right = dates[i+1];
+        div.innerHTML = `<div class="pair-cols">
+          <div class="pair-col">${dayContentHtml(left, {compact:true})}</div>
+          <div class="pair-col">${right ? dayContentHtml(right, {compact:true}) : ''}</div>
+        </div>
+        ${footerHtml()}`;
+        printBatchContainer.appendChild(div);
+      }
+    }
+    document.body.classList.add('printing-batch');
+    window.print();
+  }
+  window.addEventListener('afterprint', ()=>{
+    if(document.body.classList.contains('printing-batch')){
+      document.body.classList.remove('printing-batch');
+      printBatchContainer.innerHTML = '';
+    }
   });
 
   // ---------- family modal ----------
