@@ -428,7 +428,7 @@
 
   .page-footer{
     margin-top:5px;font-size:.6rem;color:var(--ink-soft);
-    display:flex;justify-content:space-between;align-items:center;
+    display:flex;justify-content:flex-end;align-items:center;
     gap:10px;
   }
   .footer-qr{
@@ -548,6 +548,10 @@
      second page. */
   @page{ size: 11in 8.5in; margin: 0.25in; }
   @media print{
+    :root{
+      --paper-line:#AFA998;
+      --paper-line-strong:#8C8570;
+    }
     html, body{ background:#fff; width:100%; height:100%; margin:0; }
     .no-print{ display:none !important; }
     .sheet-wrap{ padding:0;width:100%;height:100%; }
@@ -1027,7 +1031,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function footerHtml(){
     const qr = getQrSvg();
     return `<div class="page-footer">
-      <span>Made with Printable Calendar — a free tool for family calendars, birthdays &amp; weekly plans.</span>
       <div class="footer-qr">
         <span class="footer-qr-text">Scan to make<br>your own calendar</span>
         ${qr}
