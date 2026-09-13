@@ -428,7 +428,7 @@
 
   .page-footer{
     margin-top:5px;font-size:.6rem;color:var(--ink-soft);
-    display:flex;justify-content:space-between;align-items:center;
+    display:flex;justify-content:flex-end;align-items:center;
     gap:10px;
   }
   .footer-qr{
@@ -1027,7 +1027,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function footerHtml(){
     const qr = getQrSvg();
     return `<div class="page-footer">
-      <span>Made with Printable Calendar — a free tool for family calendars, birthdays &amp; weekly plans.</span>
       <div class="footer-qr">
         <span class="footer-qr-text">Scan to make<br>your own calendar</span>
         ${qr}
