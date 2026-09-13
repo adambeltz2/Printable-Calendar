@@ -548,6 +548,10 @@
      second page. */
   @page{ size: 11in 8.5in; margin: 0.25in; }
   @media print{
+    :root{
+      --paper-line:#AFA998;
+      --paper-line-strong:#8C8570;
+    }
     html, body{ background:#fff; width:100%; height:100%; margin:0; }
     .no-print{ display:none !important; }
     .sheet-wrap{ padding:0;width:100%;height:100%; }
