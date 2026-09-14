@@ -1,0 +1,13 @@
+{
+  "name": "printable-calendar",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Static, printable family calendar (day/week/month/year views).",
+  "scripts": {
+    "test": "playwright test",
+    "test:print": "playwright test tests/print.spec.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.1"
+  }
+}

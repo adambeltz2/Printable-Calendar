@@ -23,10 +23,10 @@ Act as a senior software engineer and technical investigator. Optimize for corre
 *   **Format:** Append items to `backlog.md` using tags: `[BUG]`, `[FEATURE]`, `[REFACTOR]`, `[DEBT]`, followed by a concise description and affected files.
 
 ## 5. Technology Stack & Environment Rules
-*   **Primary Ecosystem:** Python, Node.js. 
-*   **Infrastructure:** Rely on Docker Compose, LXC, and Proxmox for containerization and environment management.
-*   **Automation & Data:** Prioritize n8n workflows and Metabase for data ingestion and routing over custom-built extraction scripts.
-*   **Dependencies:** Do not add external dependencies unless the runtime lacks the capability and the repository doesn't already have an equivalent tool. 
+*   **Primary Ecosystem:** A single static `index.html` (vanilla HTML/CSS/JS, no framework, no bundler, no server-side code) deployed as-is via GitHub Pages.
+*   **Infrastructure:** None — no Docker, containers, or hosted services. GitHub Pages serves the static file directly from the repo.
+*   **Testing:** Node.js + Playwright (`@playwright/test`) drive the only build tooling in the repo, used to test the printed output (the app's core purpose) under `@media print`. Run via `npm test`; CI runs it in `.github/workflows/tests.yml` on every push/PR.
+*   **Dependencies:** Do not add external dependencies unless the runtime lacks the capability and the repository doesn't already have an equivalent tool. The page itself should stay dependency-free (the bundled qrcode-generator script is the one exception); Playwright is dev/test-only and never ships to the page.
 
 ## 6. Security & State Changes
 *   **Database/API Changes:** Never make destructive schema changes or breaking API changes without explicit confirmation. Check migrations, callers, and compatibility first.
