@@ -382,7 +382,11 @@
 
   @media print{
     body.printing-batch .sheet-wrap{ display:none; }
-    body.printing-batch .print-batch{ display:block; }
+    /* Needs an explicit height, not just display:block: percentage
+       heights on the pages below only resolve against a parent with a
+       real (non-auto) height, otherwise each page collapses to its own
+       content height instead of filling the sheet. */
+    body.printing-batch .print-batch{ display:block; height:100%; }
     .print-batch-page, .print-batch-pair{
       width:100%;height:100%;
       page-break-after:always; break-after:page;

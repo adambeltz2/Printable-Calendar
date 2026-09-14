@@ -98,6 +98,34 @@ for (const view of VIEWS) {
   });
 }
 
+test.describe('day view — print via the "Print" button/modal', () => {
+  // The modal builds a separate #printBatchContainer markup tree (not the
+  // normal #calendarPage), which had its own bug: the container never got
+  // an explicit height, so height:100% on the printed page had nothing to
+  // resolve against and the page collapsed to its content's height instead
+  // of the full sheet — leaving the footer/QR code stranded mid-page with
+  // blank space below it.
+  test('single-day batch page fills the sheet and pins the footer to the bottom', async ({ page }) => {
+    await page.emulateMedia({ media: 'screen' });
+    await page.goto(APP_URL);
+    await page.click('button[data-view="day"]');
+    await page.click('#printBtn');
+    await page.click('#dayPrintGoBtn');
+    await page.emulateMedia({ media: 'print' });
+
+    const viewport = page.viewportSize();
+    const batchPage = page.locator('.print-batch-page');
+    const pageBox = await batchPage.boundingBox();
+    expect(pageBox).not.toBeNull();
+    expect(pageBox.height).toBeGreaterThan(viewport.height * 0.95);
+
+    const footerBox = await batchPage.locator('.page-footer').boundingBox();
+    expect(footerBox).not.toBeNull();
+    // Bottom edge of the footer should sit at (essentially) the bottom of the page.
+    expect(footerBox.y + footerBox.height).toBeGreaterThan(pageBox.y + pageBox.height - 5);
+  });
+});
+
 test.describe('day view — print pagination', () => {
   test('a single day prints as exactly one page', async ({ page }) => {
     await gotoView(page, 'day');
