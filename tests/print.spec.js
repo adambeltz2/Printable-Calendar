@@ -20,9 +20,22 @@ function luminance(rgbString) {
 }
 
 async function gotoView(page, view) {
+  // Reset to screen media first: emulateMedia persists across navigations,
+  // and a stale 'print' emulation would hide the (no-print) view buttons
+  // we're about to click on the freshly loaded page.
+  await page.emulateMedia({ media: 'screen' });
   await page.goto(APP_URL);
   await page.click(`button[data-view="${view}"]`);
   await page.emulateMedia({ media: 'print' });
+}
+
+/** Reads the /MediaBox of the first page in a PDF's raw bytes, in points. */
+function firstPageMediaBox(pdfBytes) {
+  const text = pdfBytes.toString('latin1');
+  const m = text.match(/\/MediaBox\s*\[\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\]/);
+  if (!m) return null;
+  const [, x0, y0, x1, y1] = m.map(Number);
+  return { width: x1 - x0, height: y1 - y0 };
 }
 
 const VIEWS = ['day', 'week', 'month', 'year'];
@@ -97,6 +110,20 @@ test.describe('day view — print pagination', () => {
     const text = bytes.toString('latin1');
     const pageCount = (text.match(/\/Type\s*\/Page(?![A-Za-z])/g) || []).length;
     expect(pageCount).toBe(1);
+  });
+
+  test('a single day prints portrait, other views print landscape', async ({ page }) => {
+    await gotoView(page, 'day');
+    const dayBytes = await page.pdf({ preferCSSPageSize: true });
+    const dayBox = firstPageMediaBox(dayBytes);
+    expect(dayBox).not.toBeNull();
+    expect(dayBox.height).toBeGreaterThan(dayBox.width); // portrait
+
+    await gotoView(page, 'week');
+    const weekBytes = await page.pdf({ preferCSSPageSize: true });
+    const weekBox = firstPageMediaBox(weekBytes);
+    expect(weekBox).not.toBeNull();
+    expect(weekBox.width).toBeGreaterThan(weekBox.height); // landscape
   });
 
   test('hour grid and sidebar sit side by side, not stacked', async ({ page }) => {

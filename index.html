@@ -1042,6 +1042,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   const page = document.getElementById('calendarPage');
 
   function render(){
+    setPrintOrientation(state.view==='day' ? 'portrait' : 'landscape');
     if(state.view==='day') renderDay();
     else if(state.view==='month') renderMonth();
     else if(state.view==='week') renderWeek();
@@ -1333,7 +1334,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   });
   document.getElementById('printBtn').addEventListener('click', ()=>{
     if(state.view === 'day') openDayPrintModal();
-    else window.print();
+    else { setPrintOrientation('landscape'); window.print(); }
   });
   document.getElementById('mondayStartToggle').addEventListener('change', (e)=>{
     settings.mondayStart = e.target.checked; saveSettings();
@@ -1499,8 +1500,27 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     printDayBatch(dates, perPage);
   });
 
+  // A single day per printed page reads better as a portrait sheet (one
+  // tall hour list + sidebar); two days per page stay landscape so the
+  // pair sits side by side. Week/month/year prints never touch this.
+  let printOrientationStyle = null;
+  function setPrintOrientation(orientation){
+    if(orientation === 'portrait'){
+      if(!printOrientationStyle){
+        printOrientationStyle = document.createElement('style');
+        printOrientationStyle.id = 'printOrientationOverride';
+        document.head.appendChild(printOrientationStyle);
+      }
+      printOrientationStyle.textContent = '@page{ size: 8.5in 11in; margin: 0.3in; }';
+    } else if(printOrientationStyle){
+      printOrientationStyle.remove();
+      printOrientationStyle = null;
+    }
+  }
+
   function printDayBatch(dates, perPage){
     printBatchContainer.innerHTML = '';
+    setPrintOrientation(perPage === 1 ? 'portrait' : 'landscape');
     if(perPage === 1){
       dates.forEach(d=>{
         const div = document.createElement('div');
@@ -1529,6 +1549,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       document.body.classList.remove('printing-batch');
       printBatchContainer.innerHTML = '';
     }
+    setPrintOrientation('landscape');
   });
 
   // ---------- family modal ----------
