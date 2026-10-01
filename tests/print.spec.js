@@ -126,6 +126,33 @@ test.describe('day view — print via the "Print" button/modal', () => {
   });
 });
 
+test.describe('day view — print via the "Print" button/modal, 2-per-page pairs', () => {
+  test('a 4-day range at 2-per-page prints 2 pages that both fill the sheet', async ({ page }) => {
+    await page.emulateMedia({ media: 'screen' });
+    await page.goto(APP_URL);
+    await page.click('button[data-view="day"]');
+    await page.click('#printBtn');
+    await page.click('input[name=dayPrintRange][value="range"]');
+    await page.fill('#dayPrintStart', '2026-09-14');
+    await page.fill('#dayPrintEnd', '2026-09-17'); // 4 days
+    await page.click('input[name=dayPrintPerPage][value="2"]');
+    await page.click('#dayPrintGoBtn');
+    await page.emulateMedia({ media: 'print' });
+
+    const pairs = page.locator('.print-batch-pair');
+    await expect(pairs).toHaveCount(2);
+
+    const viewport = page.viewportSize();
+    const count = await pairs.count();
+    for (let i = 0; i < count; i++) {
+      const pairBox = await pairs.nth(i).boundingBox();
+      expect(pairBox.height).toBeGreaterThan(viewport.height * 0.95);
+      const cols = pairs.nth(i).locator('.pair-col');
+      await expect(cols).toHaveCount(2);
+    }
+  });
+});
+
 test.describe('day view — print pagination', () => {
   test('a single day prints as exactly one page', async ({ page }) => {
     await gotoView(page, 'day');
