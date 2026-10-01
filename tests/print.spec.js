@@ -19,6 +19,15 @@ function luminance(rgbString) {
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 }
 
+// The printed page is sized to an absolute physical content box (sheet
+// size minus margin), not width/height:100%, so a percentage-height chain
+// through html/body/.sheet-wrap doesn't have to resolve correctly in every
+// print engine (it wasn't reliable on at least one real mobile printer).
+// Match the test viewport to that same content box so "does it fill/overflow
+// the page" is checked against the real page size, not an arbitrary default.
+const LANDSCAPE_PAGE_PX = { width: 1008, height: 768 }; // 10.5in x 8in @ 96dpi
+const PORTRAIT_PAGE_PX = { width: 758, height: 998 }; // 7.9in x 10.4in @ 96dpi
+
 async function gotoView(page, view) {
   // Reset to screen media first: emulateMedia persists across navigations,
   // and a stale 'print' emulation would hide the (no-print) view buttons
@@ -26,6 +35,7 @@ async function gotoView(page, view) {
   await page.emulateMedia({ media: 'screen' });
   await page.goto(APP_URL);
   await page.click(`button[data-view="${view}"]`);
+  await page.setViewportSize(view === 'day' ? PORTRAIT_PAGE_PX : LANDSCAPE_PAGE_PX);
   await page.emulateMedia({ media: 'print' });
 }
 
@@ -53,11 +63,19 @@ for (const view of VIEWS) {
       expect(box.width).toBeGreaterThan(viewport.width * 0.95);
       expect(box.height).toBeGreaterThan(viewport.height * 0.95);
 
+      // Content must not push the page taller/wider than its own fixed
+      // physical size — this is the check that catches a view's content
+      // (e.g. a month grid's last row) spilling onto a near-empty extra
+      // page, which an earlier width/height:100% layout let slip through
+      // undetected here even when it happened on a real printer.
       const overflow = await page.evaluate(() => ({
         scrollWidth: document.documentElement.scrollWidth,
         clientWidth: document.documentElement.clientWidth,
+        scrollHeight: document.documentElement.scrollHeight,
+        clientHeight: document.documentElement.clientHeight,
       }));
       expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth + 1);
+      expect(overflow.scrollHeight).toBeLessThanOrEqual(overflow.clientHeight + 1);
     });
 
     test('does not show the old promotional footer text', async ({ page }) => {
@@ -111,6 +129,7 @@ test.describe('day view — print via the "Print" button/modal', () => {
     await page.click('button[data-view="day"]');
     await page.click('#printBtn');
     await page.click('#dayPrintGoBtn');
+    await page.setViewportSize(PORTRAIT_PAGE_PX);
     await page.emulateMedia({ media: 'print' });
 
     const viewport = page.viewportSize();
@@ -123,6 +142,12 @@ test.describe('day view — print via the "Print" button/modal', () => {
     expect(footerBox).not.toBeNull();
     // Bottom edge of the footer should sit at (essentially) the bottom of the page.
     expect(footerBox.y + footerBox.height).toBeGreaterThan(pageBox.y + pageBox.height - 5);
+
+    const overflow = await page.evaluate(() => ({
+      scrollHeight: document.documentElement.scrollHeight,
+      clientHeight: document.documentElement.clientHeight,
+    }));
+    expect(overflow.scrollHeight).toBeLessThanOrEqual(overflow.clientHeight + 1);
   });
 });
 
@@ -137,6 +162,7 @@ test.describe('day view — print via the "Print" button/modal, 2-per-page pairs
     await page.fill('#dayPrintEnd', '2026-09-17'); // 4 days
     await page.click('input[name=dayPrintPerPage][value="2"]');
     await page.click('#dayPrintGoBtn');
+    await page.setViewportSize(LANDSCAPE_PAGE_PX);
     await page.emulateMedia({ media: 'print' });
 
     const pairs = page.locator('.print-batch-pair');
@@ -150,6 +176,16 @@ test.describe('day view — print via the "Print" button/modal, 2-per-page pairs
       const cols = pairs.nth(i).locator('.pair-col');
       await expect(cols).toHaveCount(2);
     }
+
+    const overflow = await page.evaluate(() => ({
+      scrollHeight: document.documentElement.scrollHeight,
+      clientHeight: document.documentElement.clientHeight,
+    }));
+    // Both pages combined shouldn't push a single page's own box taller than
+    // itself; page-break-after keeps them stacked, so total scrollHeight is
+    // allowed to be ~2 pages tall, but each individual pair already got its
+    // own height check above.
+    expect(overflow.scrollHeight).toBeLessThanOrEqual(overflow.clientHeight * 2 + 2);
   });
 });
 
