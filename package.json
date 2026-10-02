@@ -1,7 +1,7 @@
 {
   "name": "printable-calendar",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Static, printable family calendar (day/week/month/year views).",
   "scripts": {
     "test": "playwright test",
