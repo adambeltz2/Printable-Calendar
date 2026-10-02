@@ -19,14 +19,17 @@ function luminance(rgbString) {
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 }
 
-// The printed page is sized to an absolute physical content box (sheet
-// size minus margin), not width/height:100%, so a percentage-height chain
-// through html/body/.sheet-wrap doesn't have to resolve correctly in every
-// print engine (it wasn't reliable on at least one real mobile printer).
-// Match the test viewport to that same content box so "does it fill/overflow
-// the page" is checked against the real page size, not an arbitrary default.
-const LANDSCAPE_PAGE_PX = { width: 979, height: 739 }; // 10.2in x 7.7in @ 96dpi
-const PORTRAIT_PAGE_PX = { width: 730, height: 970 }; // 7.6in x 10.1in @ 96dpi
+// The printed page fills the page via 99vw/99vh (viewport units), not
+// width/height:100%, so it isn't relying on a percentage-height chain
+// through html/body/.sheet-wrap to resolve correctly in every print engine
+// (that chain wasn't reliable on at least one real mobile printer). Set the
+// test's own viewport to a representative landscape/portrait Letter-ish
+// size so "does it fill/overflow the page" is checked against something
+// concrete rather than an arbitrary default — the exact numbers aren't
+// load-bearing the way they were for the old absolute-inches approach,
+// since vw/vh just follows whatever viewport is active.
+const LANDSCAPE_PAGE_PX = { width: 979, height: 739 };
+const PORTRAIT_PAGE_PX = { width: 730, height: 970 };
 
 async function gotoView(page, view) {
   // Reset to screen media first: emulateMedia persists across navigations,
