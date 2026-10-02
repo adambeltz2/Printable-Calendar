@@ -383,13 +383,14 @@
   @media print{
     body.printing-batch .sheet-wrap{ display:none; }
     body.printing-batch .print-batch{ display:block; }
-    /* Absolute size (not 100%) for the same reason as .calendar-page
-       above: these pages shouldn't depend on a percentage-height chain
-       through #printBatchContainer resolving correctly in every print
-       engine. --print-page-w/h already track single (portrait) vs.
-       2-per-page (landscape) via setPrintOrientation() in JS. */
+    /* vw/vh (not 100%) for the same reason as .calendar-page above: these
+       pages shouldn't depend on a percentage-height chain through
+       #printBatchContainer resolving correctly in every print engine.
+       setPrintOrientation() in JS switches @page between portrait
+       (single day per page) and landscape (2 per page); vw/vh then just
+       follows whichever page size is active. */
     .print-batch-page, .print-batch-pair{
-      width:var(--print-page-w); height:var(--print-page-h);
+      width:99vw; height:99vh;
       page-break-after:always; break-after:page;
     }
     .print-batch-page:last-child, .print-batch-pair:last-child{
@@ -548,42 +549,32 @@
   /* Explicit inch dimensions on @page print more reliably across mobile
      print services than the "landscape" keyword alone.
 
-     The printed page elements get their own ABSOLUTE size (the content
-     box: sheet size minus margin) rather than width/height:100%. Percentage
-     heights only resolve correctly if every ancestor (html, body,
-     .sheet-wrap, ...) gets a definite height from the print engine's page
-     box — true in desktop Chrome's print preview, but not guaranteed in
-     every mobile/WebView print pipeline. When that chain doesn't hold,
-     height:100% collapses to the content's natural height, grid rows with
-     "1fr" tracks fall back to their own content size instead of sharing
-     the page evenly, and the result overflows onto a near-empty extra
-     page. Absolute inches don't depend on that chain at all. (A size equal
-     to the full SHEET instead of the content box double-subtracts the
-     margin and overflows the other way — see --print-page-w/h below.)
-
-     --print-page-w/h deliberately undershoot "sheet minus @page margin"
-     by a further ~3%: a real mobile print pipeline doesn't necessarily
-     honor the declared @page margin either (it may apply its own, larger,
-     unprintable-area margin), and even a sub-pixel rounding difference is
-     enough to spill an entire extra near-empty page. This buffer costs an
-     imperceptible sliver of margin in exchange for not being that fragile. */
+     The printed page elements fill the page via 100vw/100vh (viewport
+     units), not width/height:100% or a hand-computed "sheet minus margin"
+     absolute size. 100% needs every ancestor (html, body, .sheet-wrap, ...)
+     to get a definite height from the print engine's page box to resolve
+     correctly — true in desktop Chrome's print preview, not guaranteed in
+     every mobile/WebView print pipeline. Hand-computing an absolute size
+     instead means guessing the real printable area, which depends on
+     whatever unprintable-area margin the print engine actually applies —
+     if that's bigger than the margin this file declares, the guess
+     overflows a near-empty extra page. vw/vh sidestep both problems: for
+     paged media they resolve directly against the real page content box
+     the engine is actually using, not an assumption about it and not a
+     chain of ancestors that has to cooperate. (99% rather than 100vw/vh
+     flat is a hairline safety margin against rounding, nothing more.) */
   @page{ size: 11in 8.5in; margin: 0.25in; }
   @media print{
     :root{
       --paper-line:#AFA998;
       --paper-line-strong:#8C8570;
-      /* ~3% smaller than the 11in x 8.5in page's content box (10.5in x
-         8in). Overridden to the portrait page's content box by
-         setPrintOrientation('portrait') in JS. */
-      --print-page-w: 10.2in;
-      --print-page-h: 7.7in;
     }
     html, body{ background:#fff; margin:0; }
     .no-print{ display:none !important; }
     .sheet-wrap{ padding:0; }
     .calendar-page{
       box-shadow:none;border:none;max-width:none;
-      width:var(--print-page-w); height:var(--print-page-h);
+      width:99vw; height:99vh;
       aspect-ratio:auto;padding:0;
     }
     .evt{ background:none;border-left:2px solid var(--marker); }
@@ -714,7 +705,7 @@
   <a href="https://www.buymeacoffee.com/adambeltz" target="_blank" rel="noopener noreferrer" class="bmc-link">
     <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="28">
   </a>
-  <span class="site-version">v1.1.1</span>
+  <span class="site-version">v1.2.0</span>
 </footer>
 
 <!-- Add/Edit single event modal -->
@@ -1542,12 +1533,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         printOrientationStyle.id = 'printOrientationOverride';
         document.head.appendChild(printOrientationStyle);
       }
-      printOrientationStyle.textContent =
-        '@page{ size: 8.5in 11in; margin: 0.3in; }' +
-        // ~3% smaller than the 8.5in x 11in page's content box (7.9in x
-        // 10.4in), same safety buffer as the landscape default — see the
-        // --print-page-w/h comment in the stylesheet.
-        '@media print{ :root{ --print-page-w: 7.6in; --print-page-h: 10.1in; } }';
+      printOrientationStyle.textContent = '@page{ size: 8.5in 11in; margin: 0.3in; }';
     } else if(printOrientationStyle){
       printOrientationStyle.remove();
       printOrientationStyle = null;
