@@ -25,8 +25,8 @@ function luminance(rgbString) {
 // print engine (it wasn't reliable on at least one real mobile printer).
 // Match the test viewport to that same content box so "does it fill/overflow
 // the page" is checked against the real page size, not an arbitrary default.
-const LANDSCAPE_PAGE_PX = { width: 1008, height: 768 }; // 10.5in x 8in @ 96dpi
-const PORTRAIT_PAGE_PX = { width: 758, height: 998 }; // 7.9in x 10.4in @ 96dpi
+const LANDSCAPE_PAGE_PX = { width: 979, height: 739 }; // 10.2in x 7.7in @ 96dpi
+const PORTRAIT_PAGE_PX = { width: 730, height: 970 }; // 7.6in x 10.1in @ 96dpi
 
 async function gotoView(page, view) {
   // Reset to screen media first: emulateMedia persists across navigations,

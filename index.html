@@ -559,17 +559,24 @@
      the page evenly, and the result overflows onto a near-empty extra
      page. Absolute inches don't depend on that chain at all. (A size equal
      to the full SHEET instead of the content box double-subtracts the
-     margin and overflows the other way — see --print-page-w/h below.) */
+     margin and overflows the other way — see --print-page-w/h below.)
+
+     --print-page-w/h deliberately undershoot "sheet minus @page margin"
+     by a further ~3%: a real mobile print pipeline doesn't necessarily
+     honor the declared @page margin either (it may apply its own, larger,
+     unprintable-area margin), and even a sub-pixel rounding difference is
+     enough to spill an entire extra near-empty page. This buffer costs an
+     imperceptible sliver of margin in exchange for not being that fragile. */
   @page{ size: 11in 8.5in; margin: 0.25in; }
   @media print{
     :root{
       --paper-line:#AFA998;
       --paper-line-strong:#8C8570;
-      /* Sheet size minus margin, i.e. the content box, for the default
-         11in x 8.5in landscape page above. Overridden to the portrait
-         page's content box by setPrintOrientation('portrait') in JS. */
-      --print-page-w: 10.5in;
-      --print-page-h: 8in;
+      /* ~3% smaller than the 11in x 8.5in page's content box (10.5in x
+         8in). Overridden to the portrait page's content box by
+         setPrintOrientation('portrait') in JS. */
+      --print-page-w: 10.2in;
+      --print-page-h: 7.7in;
     }
     html, body{ background:#fff; margin:0; }
     .no-print{ display:none !important; }
@@ -707,7 +714,7 @@
   <a href="https://www.buymeacoffee.com/adambeltz" target="_blank" rel="noopener noreferrer" class="bmc-link">
     <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="28">
   </a>
-  <span class="site-version">v1.1.0</span>
+  <span class="site-version">v1.1.1</span>
 </footer>
 
 <!-- Add/Edit single event modal -->
@@ -1537,7 +1544,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       }
       printOrientationStyle.textContent =
         '@page{ size: 8.5in 11in; margin: 0.3in; }' +
-        '@media print{ :root{ --print-page-w: 7.9in; --print-page-h: 10.4in; } }';
+        // ~3% smaller than the 8.5in x 11in page's content box (7.9in x
+        // 10.4in), same safety buffer as the landscape default — see the
+        // --print-page-w/h comment in the stylesheet.
+        '@media print{ :root{ --print-page-w: 7.6in; --print-page-h: 10.1in; } }';
     } else if(printOrientationStyle){
       printOrientationStyle.remove();
       printOrientationStyle = null;
