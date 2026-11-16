@@ -306,3 +306,28 @@ test.describe('month view — always exactly one sheet, whatever the window size
     expect(lastRow.y + lastRow.height).toBeLessThanOrEqual(pageBox.y + pageBox.height + 1);
   });
 });
+
+test.describe('Rocketbook format toggle', () => {
+  test('off by default, adds corner markers and a destination row when enabled', async ({ page }) => {
+    await gotoView(page, 'month');
+    await expect(page.locator('.rb-corner')).toHaveCount(0);
+    await expect(page.locator('.rb-dest')).toHaveCount(0);
+
+    await page.emulateMedia({ media: 'screen' });
+    await page.click('#rocketbookToggle');
+    await page.emulateMedia({ media: 'print' });
+
+    await expect(page.locator('.rb-corner')).toHaveCount(4);
+    await expect(page.locator('.rb-dest')).toHaveCount(7);
+
+    // Enabling it shouldn't push the page past its own bounds.
+    const overflow = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+      scrollHeight: document.documentElement.scrollHeight,
+      clientHeight: document.documentElement.clientHeight,
+    }));
+    expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth + 1);
+    expect(overflow.scrollHeight).toBeLessThanOrEqual(overflow.clientHeight + 1);
+  });
+});
