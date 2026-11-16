@@ -390,14 +390,14 @@
   @media print{
     body.printing-batch .sheet-wrap{ display:none; }
     body.printing-batch .print-batch{ display:block; }
-    /* vw/vh (not 100%) for the same reason as .calendar-page above: these
-       pages shouldn't depend on a percentage-height chain through
-       #printBatchContainer resolving correctly in every print engine.
-       setPrintOrientation() in JS switches @page between portrait
-       (single day per page) and landscape (2 per page); vw/vh then just
-       follows whichever page size is active. */
+    /* Fixed-inch page box (--pg-w/--pg-h), same reasoning as the main print
+       block below: no vw/vh or percentage chains. setPrintOrientation() in
+       JS switches @page and these two variables between portrait (single
+       day per page) and landscape (2 per page). */
     .print-batch-page, .print-batch-pair{
-      width:99vw; height:99vh;
+      width:var(--pg-w); height:var(--pg-h);
+      overflow:hidden;
+      break-inside:avoid; page-break-inside:avoid;
       page-break-after:always; break-after:page;
     }
     .print-batch-page:last-child, .print-batch-pair:last-child{
@@ -556,36 +556,48 @@
   }
 
   /* ---------- Print ---------- */
-  /* Explicit inch dimensions on @page print more reliably across mobile
-     print services than the "landscape" keyword alone.
+  /* One calendar view = exactly one sheet, with no print-dialog tweaking.
 
-     The printed page elements fill the page via 100vw/100vh (viewport
-     units), not width/height:100% or a hand-computed "sheet minus margin"
-     absolute size. 100% needs every ancestor (html, body, .sheet-wrap, ...)
-     to get a definite height from the print engine's page box to resolve
-     correctly — true in desktop Chrome's print preview, not guaranteed in
-     every mobile/WebView print pipeline. Hand-computing an absolute size
-     instead means guessing the real printable area, which depends on
-     whatever unprintable-area margin the print engine actually applies —
-     if that's bigger than the margin this file declares, the guess
-     overflows a near-empty extra page. vw/vh sidestep both problems: for
-     paged media they resolve directly against the real page content box
-     the engine is actually using, not an assumption about it and not a
-     chain of ancestors that has to cooperate. (99% rather than 100vw/vh
-     flat is a hairline safety margin against rounding, nothing more.) */
+     The printed page is sized in fixed inches derived from the @page box
+     below, NOT from vw/vh or percentage-height chains. Viewport units turned
+     out to resolve against the wrong box in Chrome's interactive print
+     preview (a 5-row month laid out ~portrait-tall on a landscape sheet and
+     its last row + footer spilled onto a 2nd sheet), while page.pdf() and
+     headless runs hid the problem. Fixed inches behave identically in every
+     print path.
+
+     @page is 11in x 8.5in with a 0.25in margin => 10.5in x 8in content box.
+     --pg-w / --pg-h are 0.1in smaller than that on every side (slack for
+     printers whose unprintable margin exceeds the declared one). Portrait
+     (single day) overrides both via setPrintOrientation() in JS.
+     overflow:hidden + the fixed height guarantee the page can never grow past
+     one sheet: the month grid's flex:1 rows shrink to fit instead. */
   @page{ size: 11in 8.5in; margin: 0.25in; }
   @media print{
     :root{
       --paper-line:#AFA998;
       --paper-line-strong:#8C8570;
+      --pg-w:10.3in;
+      --pg-h:7.8in;
     }
-    html, body{ background:#fff; margin:0; }
+    html, body{ background:#fff; margin:0; padding:0; height:auto; min-height:0; }
     .no-print{ display:none !important; }
-    .sheet-wrap{ padding:0; }
+    /* Nothing but the calendar (or the batch pages) may take up space: any
+       other visible block after it is another potential blank sheet. */
+    body > *:not(.sheet-wrap):not(.print-batch){ display:none !important; }
+    .sheet-wrap{
+      display:block;
+      padding:0; margin:0;
+      width:var(--pg-w); height:var(--pg-h);
+      overflow:hidden;
+      break-inside:avoid; page-break-inside:avoid;
+    }
     .calendar-page{
       box-shadow:none;border:none;max-width:none;
-      width:99vw; height:99vh;
-      aspect-ratio:auto;padding:0;
+      width:var(--pg-w); height:var(--pg-h);
+      aspect-ratio:auto;padding:0;margin:0;
+      overflow:hidden;
+      break-inside:avoid; page-break-inside:avoid;
     }
     .evt{ background:none;border-left:2px solid var(--marker); }
     .evt.holiday{ background:none;border-left-color:var(--holiday); }
@@ -1543,7 +1555,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         printOrientationStyle.id = 'printOrientationOverride';
         document.head.appendChild(printOrientationStyle);
       }
-      printOrientationStyle.textContent = '@page{ size: 8.5in 11in; margin: 0.3in; }';
+      printOrientationStyle.textContent = '@page{ size: 8.5in 11in; margin: 0.3in; } @media print{ :root{ --pg-w:7.7in; --pg-h:10.2in; } }';
     } else if(printOrientationStyle){
       printOrientationStyle.remove();
       printOrientationStyle = null;

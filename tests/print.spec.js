@@ -19,17 +19,24 @@ function luminance(rgbString) {
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 }
 
-// The printed page fills the page via 99vw/99vh (viewport units), not
-// width/height:100%, so it isn't relying on a percentage-height chain
-// through html/body/.sheet-wrap to resolve correctly in every print engine
-// (that chain wasn't reliable on at least one real mobile printer). Set the
-// test's own viewport to a representative landscape/portrait Letter-ish
-// size so "does it fill/overflow the page" is checked against something
-// concrete rather than an arbitrary default — the exact numbers aren't
-// load-bearing the way they were for the old absolute-inches approach,
-// since vw/vh just follows whatever viewport is active.
-const LANDSCAPE_PAGE_PX = { width: 979, height: 739 };
-const PORTRAIT_PAGE_PX = { width: 730, height: 970 };
+// The printed page is sized in fixed inches inside the @page box (NOT vw/vh:
+// viewport units resolved against the wrong box in Chrome's real print
+// preview and pushed a month's last row onto a 2nd sheet). The test
+// viewports below are the actual @page content boxes at 96 CSS px/inch:
+// landscape Letter 11x8.5in with 0.25in margins => 10.5x8in, portrait Letter
+// 8.5x11in with 0.3in margins => 7.9x10.4in.
+const LANDSCAPE_PAGE_PX = { width: 1008, height: 768 };
+const PORTRAIT_PAGE_PX = { width: 758, height: 998 };
+
+/**
+ * Headless Chromium's window.print() returns instantly and fires `afterprint`
+ * right away, which makes the app tear down its #printBatchContainer before a
+ * test can inspect it (a real browser blocks on the print dialog first). Stub
+ * print() so the batch markup stays in the DOM for the @media print checks.
+ */
+async function stubWindowPrint(page) {
+  await page.evaluate(() => { window.print = () => {}; });
+}
 
 async function gotoView(page, view) {
   // Reset to screen media first: emulateMedia persists across navigations,
@@ -129,6 +136,7 @@ test.describe('day view — print via the "Print" button/modal', () => {
   test('single-day batch page fills the sheet and pins the footer to the bottom', async ({ page }) => {
     await page.emulateMedia({ media: 'screen' });
     await page.goto(APP_URL);
+    await stubWindowPrint(page);
     await page.click('button[data-view="day"]');
     await page.click('#printBtn');
     await page.click('#dayPrintGoBtn');
@@ -158,6 +166,7 @@ test.describe('day view — print via the "Print" button/modal, 2-per-page pairs
   test('a 4-day range at 2-per-page prints 2 pages that both fill the sheet', async ({ page }) => {
     await page.emulateMedia({ media: 'screen' });
     await page.goto(APP_URL);
+    await stubWindowPrint(page);
     await page.click('button[data-view="day"]');
     await page.click('#printBtn');
     await page.click('input[name=dayPrintRange][value="range"]');
@@ -236,5 +245,64 @@ test.describe('day view — print pagination', () => {
 
     const hourRows = await page.locator('.hour-row').count();
     expect(hourRows).toBe(16); // 6 AM through 9 PM inclusive
+  });
+});
+
+test.describe('month view — always exactly one sheet, whatever the window size', () => {
+  // The bug this guards: a month printed fine in some environments but, in
+  // Chrome's real print preview, a 5-row month's last row + footer landed on
+  // a 2nd sheet, forcing users to fiddle with print settings. Every month
+  // (4-, 5- and 6-row, Sunday and Monday start) must be one landscape sheet
+  // regardless of the browser window the user happens to have open.
+  const WINDOWS = [
+    { width: 1280, height: 720 },
+    { width: 1920, height: 1080 },
+    { width: 800, height: 1100 }, // tall/portrait-ish window
+    { width: 390, height: 844 },  // phone
+  ];
+
+  for (const win of WINDOWS) {
+    test(`all 24 months of 2026-2027 print on 1 landscape sheet at ${win.width}x${win.height}`, async ({ page }) => {
+      await page.setViewportSize(win);
+      await page.emulateMedia({ media: 'screen' });
+      await page.goto(APP_URL);
+      await page.click('button[data-view="month"]');
+      for (const monday of [false, true]) {
+        await page.evaluate((m) => {
+          const t = document.getElementById('mondayStartToggle');
+          if (t.checked !== m) t.click();
+        }, monday);
+        for (const year of [2026, 2027]) {
+          for (let month = 0; month < 12; month++) {
+            await page.emulateMedia({ media: 'screen' });
+            await page.selectOption('#yearSelect', String(year));
+            await page.selectOption('#monthSelect', String(month));
+            await page.emulateMedia({ media: 'print' });
+            const bytes = await page.pdf({ preferCSSPageSize: true, printBackground: true });
+            const text = bytes.toString('latin1');
+            const pages = (text.match(/\/Type\s*\/Page(?![A-Za-z])/g) || []).length;
+            const box = firstPageMediaBox(bytes);
+            expect(pages, `${year}-${month + 1} monday=${monday}`).toBe(1);
+            expect(box.width).toBeGreaterThan(box.height);
+          }
+        }
+      }
+    });
+  }
+
+  test('footer/QR stays on the same sheet as a 5-row month (Nov 2026)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.emulateMedia({ media: 'screen' });
+    await page.goto(APP_URL);
+    await page.click('button[data-view="month"]');
+    await page.selectOption('#yearSelect', '2026');
+    await page.selectOption('#monthSelect', '10');
+    await page.emulateMedia({ media: 'print' });
+    const pageBox = await page.locator('#calendarPage').boundingBox();
+    const footer = await page.locator('#calendarPage .footer-qr').boundingBox();
+    const lastRow = await page.locator('#calendarPage .day-cell').last().boundingBox();
+    expect(pageBox.height).toBeLessThanOrEqual(7.8 * 96 + 1); // never taller than one sheet
+    expect(footer.y + footer.height).toBeLessThanOrEqual(pageBox.y + pageBox.height + 1);
+    expect(lastRow.y + lastRow.height).toBeLessThanOrEqual(pageBox.y + pageBox.height + 1);
   });
 });
