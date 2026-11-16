@@ -360,6 +360,7 @@
     display:flex;
     flex-direction:column;
     padding:16px 20px 12px;
+    position:relative;
   }
   .print-batch-pair .pair-cols{
     display:flex;
@@ -653,6 +654,28 @@
   .site-footer .site-version{
     color:#B9B4A4;font-size:.68rem;font-weight:600;letter-spacing:.3px;
   }
+
+  /* ---------- Rocketbook format ---------- */
+  .rb-corner{
+    position:absolute;
+    width:9px;height:9px;
+    background:var(--ink);
+  }
+  .rb-corner-tl{ top:5px;left:5px; }
+  .rb-corner-tr{ top:5px;right:5px; }
+  .rb-corner-bl{ bottom:5px;left:5px; }
+  .rb-corner-br{ bottom:5px;right:5px; }
+  .rb-destinations{
+    display:flex;justify-content:center;gap:10px;
+    margin-top:6px;padding-top:5px;
+    border-top:1px dashed var(--paper-line-strong);
+  }
+  .rb-dest{
+    width:16px;height:16px;flex-shrink:0;
+    border:1px solid var(--ink);border-radius:3px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.62rem;line-height:1;color:var(--ink-soft);
+  }
 </style>
 </head>
 <body>
@@ -698,6 +721,7 @@
   <label class="toggle-pill"><input type="checkbox" id="holidaysToggle" checked> Holidays</label>
   <label class="toggle-pill"><input type="checkbox" id="mealsToggle" checked> Meal plan</label>
   <label class="toggle-pill"><input type="checkbox" id="inkSaverToggle"> Ink-saver</label>
+  <label class="toggle-pill"><input type="checkbox" id="rocketbookToggle"> Rocketbook format</label>
 
   <div class="spacer"></div>
 
@@ -727,7 +751,7 @@
   <a href="https://www.buymeacoffee.com/adambeltz" target="_blank" rel="noopener noreferrer" class="bmc-link">
     <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="28">
   </a>
-  <span class="site-version">v1.2.0</span>
+  <span class="site-version">v1.3.0</span>
 </footer>
 
 <!-- Add/Edit single event modal -->
@@ -910,7 +934,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   const DAY_HOUR_END = 21;   // 9 PM (row runs 9-10pm)
 
   const today = new Date();
-  const settings = Object.assign({ mondayStart:false, showHolidays:true, showMeals:true, inkSaver:false }, loadSettings());
+  const settings = Object.assign({ mondayStart:false, showHolidays:true, showMeals:true, inkSaver:false, rocketbook:false }, loadSettings());
 
   const state = {
     view: 'month',
@@ -1082,6 +1106,23 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     </div>`;
   }
 
+  // Rocketbook-style markings: four small corner squares the Rocketbook
+  // app uses to detect and crop the page, plus a row of destination
+  // symbols to tick with pen (its app lets you tag which one was marked,
+  // rather than relying on auto-detection of our own icon shapes).
+  // Opt-in via the "Rocketbook format" toggle — off by default.
+  const ROCKETBOOK_SYMBOLS = ['○','△','◇','☆','♡','□','✦'];
+  function rocketbookMarksHtml(){
+    if(!settings.rocketbook) return '';
+    return `<span class="rb-corner rb-corner-tl"></span>
+      <span class="rb-corner rb-corner-tr"></span>
+      <span class="rb-corner rb-corner-bl"></span>
+      <span class="rb-corner rb-corner-br"></span>
+      <div class="rb-destinations">
+        ${ROCKETBOOK_SYMBOLS.map(s=>`<span class="rb-dest">${s}</span>`).join('')}
+      </div>`;
+  }
+
   // ---------- rendering ----------
   const page = document.getElementById('calendarPage');
 
@@ -1144,7 +1185,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       </div>`;
     });
     html += `</div>
-    ${footerHtml()}`;
+    ${footerHtml()}${rocketbookMarksHtml()}`;
     page.innerHTML = html;
     attachCellHandlers();
   }
@@ -1200,7 +1241,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         </div>
       </div>
     </div>
-    ${footerHtml()}`;
+    ${footerHtml()}${rocketbookMarksHtml()}`;
   }
 
   function renderDay(){
@@ -1247,7 +1288,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       </div>`;
     }
     html += `</div>
-    ${footerHtml()}`;
+    ${footerHtml()}${rocketbookMarksHtml()}`;
     page.innerHTML = html;
     attachCellHandlers();
     page.querySelectorAll('.meal-row').forEach(el=>{
@@ -1282,7 +1323,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       html += `</div></div>`;
     }
     html += `</div>
-    ${footerHtml()}`;
+    ${footerHtml()}${rocketbookMarksHtml()}`;
     page.innerHTML = html;
 
     page.querySelectorAll('.mini-month').forEach(el=>{
@@ -1339,6 +1380,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.getElementById('holidaysToggle').checked = settings.showHolidays;
     document.getElementById('mealsToggle').checked = settings.showMeals;
     document.getElementById('inkSaverToggle').checked = settings.inkSaver;
+    document.getElementById('rocketbookToggle').checked = settings.rocketbook;
   }
 
   document.getElementById('viewSeg').addEventListener('click', e=>{
@@ -1394,6 +1436,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   document.getElementById('inkSaverToggle').addEventListener('change', (e)=>{
     settings.inkSaver = e.target.checked; saveSettings();
     document.body.classList.toggle('ink-saver', settings.inkSaver);
+  });
+  document.getElementById('rocketbookToggle').addEventListener('change', (e)=>{
+    settings.rocketbook = e.target.checked; saveSettings(); render();
   });
 
   // ---------- single event modal ----------
@@ -1581,7 +1626,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           <div class="pair-col">${dayContentHtml(left, {compact:true})}</div>
           <div class="pair-col">${right ? dayContentHtml(right, {compact:true}) : ''}</div>
         </div>
-        ${footerHtml()}`;
+        ${footerHtml()}${rocketbookMarksHtml()}`;
         printBatchContainer.appendChild(div);
       }
     }
